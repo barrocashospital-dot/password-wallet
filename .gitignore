@@ -1,0 +1,15 @@
+# --- Segredos: NUNCA versionar ---
+*.vault
+*.keyfile
+*.key
+recovery*.txt
+
+# --- .NET / Visual Studio ---
+bin/
+obj/
+.vs/
+*.user
+*.suo
+TestResults/
+*.log
+.idea/
