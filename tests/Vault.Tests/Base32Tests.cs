@@ -5,7 +5,6 @@ namespace Vault.Tests;
 
 public class Base32Tests
 {
-    // Vetores oficiais da RFC 4648 (sem o padding "="): se o Encode bater com todos, está correto.
     [Theory]
     [InlineData("", "")]
     [InlineData("f", "MY")]
@@ -31,7 +30,6 @@ public class Base32Tests
     [Fact]
     public void RoundTrip_RandomBytes()
     {
-        // Comprimentos de 0 a 69 cobrem todos os "restos" de bits (length % 5).
         for (var length = 0; length < 70; length++)
         {
             var data = SecureRandom.Bytes(length);
@@ -44,7 +42,7 @@ public class Base32Tests
     [Fact]
     public void TryDecode_InvalidCharacter_ReturnsFalse()
     {
-        Assert.False(Base32.TryDecode("MZXW1", out _));   // '1' não existe no alfabeto
-        Assert.False(Base32.TryDecode("mzxw6", out _));   // minúsculas não são aceitas aqui
+        Assert.False(Base32.TryDecode("MZXW1", out _));
+        Assert.False(Base32.TryDecode("mzxw6", out _));
     }
 }

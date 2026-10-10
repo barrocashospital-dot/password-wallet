@@ -4,13 +4,11 @@ namespace Vault.Tests;
 
 public class KeyDerivationTests
 {
-    // Salt fixo (16 zeros) para os testes serem repetíveis.
     private static readonly byte[] Salt = new byte[16];
 
     [Fact]
     public void Passphrase_IsDeterministic()
     {
-        // Mesma frase + mesmo salt: tem de dar a mesma chave, senão o cofre nunca reabre.
         var a = KeyDerivation.DeriveFromPassphrase("frase-de-teste", Salt, TestHelpers.FastKdf);
         var b = KeyDerivation.DeriveFromPassphrase("frase-de-teste", Salt, TestHelpers.FastKdf);
 
@@ -21,7 +19,6 @@ public class KeyDerivationTests
     [Fact]
     public void Passphrase_DifferentSalt_DifferentKey()
     {
-        // Muda só 1 byte do salt.
         var otherSalt = new byte[16];
         otherSalt[0] = 1;
 
@@ -34,7 +31,6 @@ public class KeyDerivationTests
     [Fact]
     public void Passphrase_DifferentPassphrase_DifferentKey()
     {
-        // Diferem por uma única letra (t minúsculo x T maiúsculo).
         var a = KeyDerivation.DeriveFromPassphrase("frase-de-teste", Salt, TestHelpers.FastKdf);
         var b = KeyDerivation.DeriveFromPassphrase("frase-de-tesTe", Salt, TestHelpers.FastKdf);
 
@@ -44,9 +40,8 @@ public class KeyDerivationTests
     [Fact]
     public void Passphrase_UnicodeComposedAndDecomposed_AreEqual()
     {
-        // Usamos \u... porque o editor pode normalizar um "é" digitado e esconder a diferença.
-        var composed = "café da manhã";       // é e ã em um só caractere
-        var decomposed = "café da manhã";   // e + acento, a + til
+        var composed = "caf" + (char)0x00E9 + " da manh" + (char)0x00E3;
+        var decomposed = "cafe" + (char)0x0301 + " da manha" + (char)0x0303;
 
         var a = KeyDerivation.DeriveFromPassphrase(composed, Salt, TestHelpers.FastKdf);
         var b = KeyDerivation.DeriveFromPassphrase(decomposed, Salt, TestHelpers.FastKdf);
@@ -57,7 +52,6 @@ public class KeyDerivationTests
     [Fact]
     public void Passphrase_EmojiWorks()
     {
-        // Emoji ocupa 4 bytes em UTF-8: não pode quebrar a derivação.
         var key = KeyDerivation.DeriveFromPassphrase("senha-\U0001F510-segura", Salt, TestHelpers.FastKdf);
 
         Assert.Equal(32, key.Length);
@@ -71,8 +65,8 @@ public class KeyDerivationTests
         var keyfileB = SecureRandom.Bytes(32);
 
         var a = KeyDerivation.DeriveKek(secret, keyfileA, "ctx");
-        var b = KeyDerivation.DeriveKek(secret, keyfileB, "ctx");                    // outro arquivo-chave
-        var c = KeyDerivation.DeriveKek(SecureRandom.Bytes(32), keyfileA, "ctx");    // outro segredo
+        var b = KeyDerivation.DeriveKek(secret, keyfileB, "ctx");
+        var c = KeyDerivation.DeriveKek(SecureRandom.Bytes(32), keyfileA, "ctx");
 
         Assert.Equal(32, a.Length);
         Assert.NotEqual(a, b);
@@ -82,7 +76,6 @@ public class KeyDerivationTests
     [Fact]
     public void Kek_DependsOnInfoString()
     {
-        // Mesmo segredo, sem extra, só o "info" muda.
         var secret = SecureRandom.Bytes(32);
 
         Assert.NotEqual(
