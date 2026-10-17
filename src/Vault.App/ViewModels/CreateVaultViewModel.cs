@@ -13,7 +13,7 @@ public partial class CreateVaultViewModel : ObservableObject
     private readonly IShell _shell;
     private readonly AppServices _services;
 
-    public ObservableCollection<string> Drives { get; } = new();
+    public ObservableCollection<DriveOption> Drives { get; } = new();
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(PassphraseHint))]
@@ -23,7 +23,8 @@ public partial class CreateVaultViewModel : ObservableObject
     private string _confirmation = "";
 
     [ObservableProperty]
-    private string? _selectedDrive;
+    [NotifyPropertyChangedFor(nameof(DriveWarning))]
+    private DriveOption? _selectedDrive;
 
     [ObservableProperty]
     private string _keyfilePath = "";
@@ -41,6 +42,15 @@ public partial class CreateVaultViewModel : ObservableObject
     public string PassphraseHint =>
         $"{Passphrase.Length} de {PassphrasePolicy.MinLength} caracteres (mínimo)";
 
+    public string DriveWarning => SelectedDrive switch
+    {
+        { IsSystem: true } =>
+            "Este é o disco do sistema, o mesmo do computador. Um arquivo-chave aqui não vale como segundo fator.",
+        { IsRemovable: false } =>
+            "O Windows trata este disco como fixo (comum em SSDs externos). Funciona, mas o arquivo-chave só protege se o disco ficar longe do computador.",
+        _ => ""
+    };
+
     public CreateVaultViewModel(IShell shell, AppServices services)
     {
         _shell = shell;
@@ -48,18 +58,18 @@ public partial class CreateVaultViewModel : ObservableObject
         RefreshDrives();
     }
 
-    partial void OnSelectedDriveChanged(string? value)
+    partial void OnSelectedDriveChanged(DriveOption? value)
     {
         if (value is not null)
-            KeyfilePath = Path.Combine(value, Keyfile.FileName);
+            KeyfilePath = Path.Combine(value.Root, Keyfile.FileName);
     }
 
     [RelayCommand]
     private void RefreshDrives()
     {
         Drives.Clear();
-        foreach (var root in _services.Keyfiles.RemovableRoots())
-            Drives.Add(root);
+        foreach (var drive in _services.Keyfiles.AvailableDrives())
+            Drives.Add(drive);
         SelectedDrive = Drives.FirstOrDefault();
     }
 

@@ -2,7 +2,7 @@ namespace Vault.App.Services;
 
 public interface IKeyfileLocator
 {
-    IReadOnlyList<string> RemovableRoots();
+    IReadOnlyList<DriveOption> AvailableDrives();
 
     string? FindKeyfile();
 }

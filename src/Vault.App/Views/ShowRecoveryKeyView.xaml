@@ -5,11 +5,11 @@
         <TextBlock Text="Guarde sua chave de recuperação" Style="{StaticResource Heading}"/>
         <TextBlock TextWrapping="Wrap"
                    Text="Ela abre o cofre se você perder o pendrive ou esquecer a frase. Anote em papel e guarde em lugar seguro. Ela não será mostrada de novo."/>
-        <Border Background="#FFF3CD" Padding="14" Margin="0,14">
+        <Border Background="{StaticResource WarningBackgroundBrush}" CornerRadius="8" Padding="16" Margin="0,14">
             <TextBlock Text="{Binding KeyText}" FontFamily="Consolas" FontSize="18" TextWrapping="Wrap"/>
         </Border>
         <TextBlock Text="Digite a chave de volta para confirmar que você a anotou:" Style="{StaticResource Field}"/>
         <TextBox Text="{Binding TypedBack, UpdateSourceTrigger=PropertyChanged}" FontFamily="Consolas"/>
-        <Button Content="Já guardei, continuar" Command="{Binding ContinueCommand}" HorizontalAlignment="Left"/>
+        <Button Content="Já guardei, continuar" Command="{Binding ContinueCommand}" HorizontalAlignment="Left" Style="{StaticResource PrimaryButton}"/>
     </StackPanel>
 </UserControl>

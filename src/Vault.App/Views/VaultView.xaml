@@ -7,11 +7,11 @@
     </UserControl.Resources>
     <DockPanel>
         <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,10">
-            <Button Content="Salvar" Command="{Binding SaveCommand}"/>
+            <Button Content="Salvar" Command="{Binding SaveCommand}" Style="{StaticResource PrimaryButton}"/>
             <Button Content="Bloquear" Command="{Binding LockCommand}"/>
             <TextBlock Text="● alterações não salvas" Foreground="DarkOrange" VerticalAlignment="Center"
                        Visibility="{Binding IsDirty, Converter={StaticResource BoolToVis}}"/>
-            <TextBlock Text="{Binding Status}" Foreground="Gray" VerticalAlignment="Center" Margin="12,0,0,0"/>
+            <TextBlock Text="{Binding Status}" Foreground="{StaticResource MutedBrush}" VerticalAlignment="Center" Margin="12,0,0,0"/>
         </StackPanel>
 
         <Grid>
