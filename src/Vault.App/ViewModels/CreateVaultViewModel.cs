@@ -42,14 +42,7 @@ public partial class CreateVaultViewModel : ObservableObject
     public string PassphraseHint =>
         $"{Passphrase.Length} / {PassphrasePolicy.MinLength}";
 
-    public string DriveWarning => SelectedDrive switch
-    {
-        { IsSystem: true } =>
-            "Disco do sistema: o arquivo-chave aqui não protege.",
-        { IsRemovable: false } =>
-            "Disco fixo: só protege se ficar longe do computador.",
-        _ => ""
-    };
+    public string DriveWarning => SelectedDrive?.Warning ?? "";
 
     public CreateVaultViewModel(IShell shell, AppServices services)
     {

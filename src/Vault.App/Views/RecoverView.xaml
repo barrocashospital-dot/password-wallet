@@ -1,0 +1,59 @@
+<UserControl x:Class="Vault.App.Views.RecoverView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:Vault.App.Views">
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+    </UserControl.Resources>
+    <DockPanel>
+        <StackPanel DockPanel.Dock="Bottom" MaxWidth="560" Margin="0,10,17,0">
+            <StackPanel Orientation="Horizontal" Visibility="{Binding IsStepOne, Converter={StaticResource BoolToVis}}">
+                <Button Content="Voltar" Command="{Binding BackCommand}"/>
+                <Button Content="Verificar" Command="{Binding VerifyCommand}" Style="{StaticResource PrimaryButton}"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Visibility="{Binding IsStepTwo, Converter={StaticResource BoolToVis}}">
+                <Button Content="Cancelar" Command="{Binding BackCommand}"/>
+                <Button Content="Concluir recuperação" Command="{Binding FinishCommand}" Style="{StaticResource PrimaryButton}"/>
+            </StackPanel>
+        </StackPanel>
+
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <StackPanel MaxWidth="560">
+                <TextBlock Text="Recuperar cofre" Style="{StaticResource Heading}"/>
+
+                <StackPanel Visibility="{Binding IsStepOne, Converter={StaticResource BoolToVis}}">
+                    <TextBlock Text="Arquivo do cofre" Style="{StaticResource Field}"/>
+                    <Button Content="Escolher…" Command="{Binding BrowseVaultCommand}" HorizontalAlignment="Left"/>
+                    <TextBlock Text="{Binding VaultPath}" Style="{StaticResource Hint}"/>
+
+                    <TextBlock Text="Chave de recuperação" Style="{StaticResource Field}"/>
+                    <TextBox Text="{Binding RecoveryKeyText, UpdateSourceTrigger=PropertyChanged}"
+                             FontFamily="Consolas" TextWrapping="Wrap"/>
+                </StackPanel>
+
+                <StackPanel Visibility="{Binding IsStepTwo, Converter={StaticResource BoolToVis}}">
+                    <TextBlock Text="Chave correta. Crie novas credenciais: as antigas deixam de valer."
+                               Foreground="{StaticResource SuccessBrush}" TextWrapping="Wrap"/>
+
+                    <TextBlock Text="Nova frase secreta" Style="{StaticResource Field}"/>
+                    <PasswordBox local:PasswordBoxHelper.BoundPassword="{Binding NewPassphrase, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+
+                    <TextBlock Text="Confirmar frase" Style="{StaticResource Field}"/>
+                    <PasswordBox local:PasswordBoxHelper.BoundPassword="{Binding Confirmation, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+
+                    <TextBlock Text="Novo arquivo-chave" Style="{StaticResource Field}"/>
+                    <StackPanel Orientation="Horizontal">
+                        <ComboBox ItemsSource="{Binding Drives}" SelectedItem="{Binding SelectedDrive}" DisplayMemberPath="Label"
+                                  MinWidth="320" Margin="0,2,8,2"/>
+                        <Button Content="Atualizar" Command="{Binding RefreshDrivesCommand}"/>
+                        <Button Content="Outro local…" Command="{Binding BrowseKeyfileCommand}"/>
+                    </StackPanel>
+                    <TextBlock Text="{Binding DriveWarning}" Foreground="{StaticResource OrangeBrush}" TextWrapping="Wrap" Margin="0,4,0,0"/>
+                    <TextBlock Text="{Binding KeyfilePath}" Style="{StaticResource Hint}"/>
+                </StackPanel>
+
+                <TextBlock Text="{Binding Error}" Style="{StaticResource ErrorText}"/>
+            </StackPanel>
+        </ScrollViewer>
+    </DockPanel>
+</UserControl>

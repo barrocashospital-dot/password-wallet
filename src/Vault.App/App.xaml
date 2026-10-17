@@ -20,6 +20,7 @@
         <SolidColorBrush x:Key="WarningTextBrush" Color="#FFD76A"/>
         <SolidColorBrush x:Key="OrangeBrush" Color="#FFB454"/>
         <SolidColorBrush x:Key="ErrorBrush" Color="#FF7B7B"/>
+        <SolidColorBrush x:Key="SuccessBrush" Color="#6EE7A0"/>
 
         <RadialGradientBrush x:Key="BackgroundBrush" Center="0.5,0" GradientOrigin="0.5,0" RadiusX="0.9" RadiusY="0.8">
             <GradientStop Color="#16305F" Offset="0"/>
@@ -292,6 +293,9 @@
         </DataTemplate>
         <DataTemplate DataType="{x:Type vm:UnlockViewModel}">
             <views:UnlockView/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:RecoverViewModel}">
+            <views:RecoverView/>
         </DataTemplate>
         <DataTemplate DataType="{x:Type vm:ShowRecoveryKeyViewModel}">
             <views:ShowRecoveryKeyView/>

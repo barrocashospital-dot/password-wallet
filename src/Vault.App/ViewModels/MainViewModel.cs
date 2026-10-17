@@ -24,6 +24,8 @@ public partial class MainViewModel : ObservableObject, IShell
     public void ShowUnlock(string vaultPath) =>
         Navigate(new UnlockViewModel(this, _services, vaultPath));
 
+    public void ShowRecover() => Navigate(new RecoverViewModel(this, _services));
+
     public void ShowRecoveryKey(string keyText, Action onConfirmed) =>
         Navigate(new ShowRecoveryKeyViewModel(keyText, onConfirmed));
 
