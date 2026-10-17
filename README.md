@@ -14,7 +14,7 @@ Gerenciador de senhas pessoal para Windows, feito em C# (.NET 8 + WPF) como proj
 
 ## Telas
 
-Tema escuro, com uma chuva de letras (o alfabeto do Base32) no fundo que fica azul onde o mouse passa.
+Tema escuro, com uma chuva de letras (o alfabeto do Base32) no fundo que fica azul onde o mouse passa, e transições animadas entre as telas.
 
 | Tela | Para quê |
 |---|---|

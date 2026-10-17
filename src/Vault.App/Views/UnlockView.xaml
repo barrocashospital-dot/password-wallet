@@ -23,6 +23,7 @@
 
         <TextBlock Text="{Binding Error}" Style="{StaticResource ErrorText}"/>
 
+        <local:BusyBar Visibility="{Binding IsBusy, Converter={StaticResource BoolToVis}}" Margin="0,16,0,0"/>
         <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
             <Button Content="Voltar" Command="{Binding BackCommand}"/>
             <Button Content="Desbloquear" Command="{Binding UnlockCommand}" Style="{StaticResource PrimaryButton}"/>

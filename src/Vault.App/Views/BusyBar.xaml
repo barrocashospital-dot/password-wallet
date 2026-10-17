@@ -1,0 +1,33 @@
+<UserControl x:Class="Vault.App.Views.BusyBar"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Height="3" IsHitTestVisible="False">
+    <Border ClipToBounds="True" CornerRadius="2" Background="#1B2B52">
+        <Rectangle Width="180" HorizontalAlignment="Left" RadiusX="2" RadiusY="2">
+            <Rectangle.Fill>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                    <GradientStop Color="#005CB2FF" Offset="0"/>
+                    <GradientStop Color="#FF5CB2FF" Offset="0.5"/>
+                    <GradientStop Color="#005CB2FF" Offset="1"/>
+                </LinearGradientBrush>
+            </Rectangle.Fill>
+            <Rectangle.RenderTransform>
+                <TranslateTransform x:Name="Slide" X="-180"/>
+            </Rectangle.RenderTransform>
+        </Rectangle>
+    </Border>
+    <UserControl.Triggers>
+        <EventTrigger RoutedEvent="Loaded">
+            <BeginStoryboard>
+                <Storyboard RepeatBehavior="Forever">
+                    <DoubleAnimation Storyboard.TargetName="Slide" Storyboard.TargetProperty="X"
+                                     From="-180" To="640" Duration="0:0:1.3">
+                        <DoubleAnimation.EasingFunction>
+                            <SineEase EasingMode="EaseInOut"/>
+                        </DoubleAnimation.EasingFunction>
+                    </DoubleAnimation>
+                </Storyboard>
+            </BeginStoryboard>
+        </EventTrigger>
+    </UserControl.Triggers>
+</UserControl>

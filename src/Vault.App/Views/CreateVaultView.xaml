@@ -4,6 +4,7 @@
              xmlns:local="clr-namespace:Vault.App.Views">
     <DockPanel>
         <StackPanel DockPanel.Dock="Bottom" MaxWidth="560" Margin="0,10,17,0">
+            <local:BusyBar Visibility="{Binding IsBusy, Converter={StaticResource BoolToVis}}" Margin="0,0,0,8"/>
             <StackPanel Orientation="Horizontal">
                 <Button Content="Voltar" Command="{Binding BackCommand}"/>
                 <Button Content="Criar cofre" Command="{Binding CreateCommand}" Style="{StaticResource PrimaryButton}"/>
