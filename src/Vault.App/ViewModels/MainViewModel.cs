@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using Vault.App.Services;
+using Vault.Core;
 
 namespace Vault.App.ViewModels;
 
@@ -17,6 +18,16 @@ public partial class MainViewModel : ObservableObject, IShell
     }
 
     public void ShowStart() => Navigate(new StartViewModel(this, _services));
+
+    public void ShowCreate() => Navigate(new CreateVaultViewModel(this, _services));
+
+    public void ShowRecoveryKey(string keyText, Action onConfirmed) =>
+        Navigate(new ShowRecoveryKeyViewModel(keyText, onConfirmed));
+
+    public void ShowVault(VaultSession session, string vaultPath) =>
+        Navigate(new VaultViewModel(this, _services, session, vaultPath));
+
+    public void OnClosing() => (CurrentViewModel as VaultViewModel)?.SaveIfDirty();
 
     private void Navigate(ObservableObject next)
     {

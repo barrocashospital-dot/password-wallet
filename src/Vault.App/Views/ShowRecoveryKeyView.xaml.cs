@@ -1,0 +1,8 @@
+using System.Windows.Controls;
+
+namespace Vault.App.Views;
+
+public partial class ShowRecoveryKeyView : UserControl
+{
+    public ShowRecoveryKeyView() => InitializeComponent();
+}

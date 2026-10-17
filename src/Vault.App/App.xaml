@@ -35,5 +35,14 @@
         <DataTemplate DataType="{x:Type vm:StartViewModel}">
             <views:StartView/>
         </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:CreateVaultViewModel}">
+            <views:CreateVaultView/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:ShowRecoveryKeyViewModel}">
+            <views:ShowRecoveryKeyView/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:VaultViewModel}">
+            <views:VaultView/>
+        </DataTemplate>
     </Application.Resources>
 </Application>

@@ -1,4 +1,5 @@
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using Vault.App.Services;
 
 namespace Vault.App.ViewModels;
@@ -13,4 +14,7 @@ public partial class StartViewModel : ObservableObject
         _shell = shell;
         _services = services;
     }
+
+    [RelayCommand]
+    private void CreateVault() => _shell.ShowCreate();
 }
