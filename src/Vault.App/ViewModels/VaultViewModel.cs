@@ -124,7 +124,7 @@ public partial class VaultViewModel : ObservableObject, IDisposable
         _session.Lock();
         Entries.Clear();
         Selected = null;
-        _shell.ShowStart();
+        _shell.ShowUnlock(_vaultPath);
     }
 
     public void SaveIfDirty()

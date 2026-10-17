@@ -6,5 +6,6 @@
                RenderOptions.BitmapScalingMode="HighQuality"/>
         <Button Content="Criar novo cofre" Command="{Binding CreateVaultCommand}"
                 Style="{StaticResource PrimaryButton}" Margin="0,18,0,4"/>
+        <Button Content="Abrir cofre" Command="{Binding OpenVaultCommand}" Margin="0,4"/>
     </StackPanel>
 </UserControl>

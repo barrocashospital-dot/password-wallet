@@ -17,4 +17,12 @@ public partial class StartViewModel : ObservableObject
 
     [RelayCommand]
     private void CreateVault() => _shell.ShowCreate();
+
+    [RelayCommand]
+    private void OpenVault()
+    {
+        var path = _services.Files.PickVaultToOpen();
+        if (path is not null)
+            _shell.ShowUnlock(path);
+    }
 }
