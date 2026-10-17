@@ -28,7 +28,7 @@ public partial class MainViewModel : ObservableObject, IShell
     public void ShowRecover() => Navigate(new RecoverViewModel(this, _services));
 
     public void ShowRecoveryKey(string keyText, Action onConfirmed) =>
-        Navigate(new ShowRecoveryKeyViewModel(keyText, onConfirmed));
+        Navigate(new ShowRecoveryKeyViewModel(keyText, onConfirmed, _services.Clipboard));
 
     public void ShowVault(VaultSession session, string vaultPath) =>
         Navigate(new VaultViewModel(this, _services, session, vaultPath));

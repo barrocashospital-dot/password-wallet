@@ -7,6 +7,7 @@
         <Border Background="{StaticResource WarningBackgroundBrush}" BorderBrush="{StaticResource WarningBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="16" Margin="0,14">
             <TextBlock Text="{Binding KeyText}" FontFamily="Consolas" FontSize="18" TextWrapping="Wrap" Foreground="{StaticResource WarningTextBrush}"/>
         </Border>
+        <Button Content="{Binding CopyLabel}" Command="{Binding CopyCommand}" HorizontalAlignment="Left" Margin="0,0,0,14"/>
         <TextBlock Text="Digite a chave para confirmar" Style="{StaticResource Field}"/>
         <TextBox Text="{Binding TypedBack, UpdateSourceTrigger=PropertyChanged}" FontFamily="Consolas"/>
         <Button Content="Já guardei, continuar" Command="{Binding ContinueCommand}" HorizontalAlignment="Left" Style="{StaticResource PrimaryButton}"/>
