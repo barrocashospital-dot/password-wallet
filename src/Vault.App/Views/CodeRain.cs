@@ -11,13 +11,13 @@ public sealed class CodeRain : FrameworkElement
     private const double CellWidth = 20;
     private const double CellHeight = 22;
     private const double GlyphSize = 16;
-    private const double HoverRadius = 80;
+    private const double HoverRadius = 46;
     private const int ColorSteps = 8;
     private const int HeadColor = ColorSteps;
-    private const int AlphaLevels = 12;
+    private const int AlphaLevels = 28;
     private const double MinTrailAlpha = 0.10;
     private const double MaxTrailAlpha = 0.58;
-    private const double MinFrameSeconds = 1.0 / 30;
+    private const double MinFrameSeconds = 0.011;
 
     private static readonly Color Base = Color.FromRgb(0x4F, 0x72, 0xC4);
     private static readonly Color Hover = Color.FromRgb(0x5C, 0xB2, 0xFF);
@@ -26,19 +26,28 @@ public sealed class CodeRain : FrameworkElement
     private readonly Random _random = new();
     private readonly Dictionary<int, FormattedText> _cache = new();
     private readonly Typeface _typeface = new(new FontFamily("Consolas"), FontStyles.Normal, FontWeights.SemiBold, FontStretches.Normal);
+    private readonly VisualCollection _visuals;
+    private readonly DrawingVisual _overlay = new();
 
     private Column[] _columns = Array.Empty<Column>();
+    private float[][] _heat = Array.Empty<float[]>();
+    private char[][] _grid = Array.Empty<char[]>();
     private int _rows;
     private TimeSpan _lastTime;
     private bool _animating;
+    private bool _heatActive;
+    private bool _overlayDrawn;
 
     private sealed class Column
     {
+        public double X;
         public double Head;
         public double Speed;
         public int Length;
-        public char[] Glyphs = Array.Empty<char>();
-        public float[] Heat = Array.Empty<float>();
+        public char[] Trail = Array.Empty<char>();
+        public double NextMutation;
+        public DrawingVisual Visual = new();
+        public TranslateTransform Move = new();
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -53,11 +62,17 @@ public sealed class CodeRain : FrameworkElement
 
     public CodeRain()
     {
+        _visuals = new VisualCollection(this);
         IsHitTestVisible = false;
+        ClipToBounds = true;
         Loaded += OnLoaded;
         Unloaded += OnUnloaded;
         SizeChanged += (_, _) => Rebuild();
     }
+
+    protected override int VisualChildrenCount => _visuals.Count;
+
+    protected override Visual GetVisualChild(int index) => _visuals[index];
 
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
@@ -79,6 +94,8 @@ public sealed class CodeRain : FrameworkElement
 
     private void Rebuild()
     {
+        _visuals.Clear();
+
         var cols = (int)(ActualWidth / CellWidth) + 1;
         _rows = (int)(ActualHeight / CellHeight) + 2;
         if (cols <= 0 || _rows <= 0)
@@ -88,19 +105,24 @@ public sealed class CodeRain : FrameworkElement
         }
 
         _columns = new Column[cols];
+        _heat = new float[cols][];
+        _grid = new char[cols][];
+
         for (var c = 0; c < cols; c++)
         {
-            var column = new Column
-            {
-                Glyphs = new char[_rows + 1],
-                Heat = new float[_rows + 1]
-            };
-            for (var r = 0; r < column.Glyphs.Length; r++)
-                column.Glyphs[r] = RandomGlyph();
+            _heat[c] = new float[_rows + 1];
+            _grid[c] = new char[_rows + 1];
+            for (var r = 0; r < _grid[c].Length; r++)
+                _grid[c][r] = RandomGlyph();
+
+            var column = new Column { X = c * CellWidth };
+            column.Visual.Transform = column.Move;
             Respawn(column, spread: true);
             _columns[c] = column;
+            _visuals.Add(column.Visual);
         }
-        InvalidateVisual();
+
+        _visuals.Add(_overlay);
     }
 
     private void Respawn(Column column, bool spread)
@@ -110,9 +132,55 @@ public sealed class CodeRain : FrameworkElement
         column.Head = spread
             ? _random.NextDouble() * (_rows + column.Length) - column.Length
             : -_random.NextDouble() * _rows * 0.6;
+        column.Trail = new char[column.Length];
+        for (var k = 0; k < column.Length; k++)
+            column.Trail[k] = RandomGlyph();
+        column.NextMutation = 0.25 + _random.NextDouble() * 0.7;
+
+        DrawStrip(column);
+        Place(column);
     }
 
     private char RandomGlyph() => Alphabet[_random.Next(Alphabet.Length)];
+
+    private void Place(Column column)
+    {
+        column.Move.X = column.X;
+        column.Move.Y = (column.Head - (column.Length - 1)) * CellHeight;
+    }
+
+    private void DrawStrip(Column column)
+    {
+        using var dc = column.Visual.RenderOpen();
+        for (var k = 0; k < column.Length; k++)
+        {
+            double alpha;
+            int colorStep;
+            if (k == 0)
+            {
+                alpha = 0.98;
+                colorStep = HeadColor;
+            }
+            else
+            {
+                var fade = 1.0 - (double)k / column.Length;
+                alpha = MinTrailAlpha + (MaxTrailAlpha - MinTrailAlpha) * fade;
+                colorStep = 0;
+            }
+
+            var level = LevelFor(alpha);
+            if (level <= 0) continue;
+
+            var text = GetText(column.Trail[k], colorStep, level);
+            dc.DrawText(text, new Point(0, (column.Length - 1 - k) * CellHeight));
+        }
+    }
+
+    private static int LevelFor(double alpha)
+    {
+        var level = (int)Math.Round(alpha * (AlphaLevels - 1));
+        return Math.Clamp(level, 0, AlphaLevels - 1);
+    }
 
     private Point CursorInElement()
     {
@@ -135,34 +203,63 @@ public sealed class CodeRain : FrameworkElement
 
         _lastTime = args.RenderingTime;
         Advance(Math.Min(dt, 0.1));
-        InvalidateVisual();
     }
 
     private void Advance(double dt)
     {
-        var mouse = CursorInElement();
-        var decay = (float)(dt * 0.9);
-
-        for (var c = 0; c < _columns.Length; c++)
+        foreach (var column in _columns)
         {
-            var column = _columns[c];
             column.Head += column.Speed * dt;
             if (column.Head - column.Length > _rows)
-                Respawn(column, spread: false);
-
-            var headRow = (int)Math.Floor(column.Head);
-            if (_random.NextDouble() < dt * 6)
             {
-                var row = headRow - _random.Next(column.Length);
-                if (row >= 0 && row < column.Glyphs.Length)
-                    column.Glyphs[row] = RandomGlyph();
+                Respawn(column, spread: false);
+                continue;
             }
 
+            column.NextMutation -= dt;
+            if (column.NextMutation <= 0)
+            {
+                column.Trail[_random.Next(column.Length)] = RandomGlyph();
+                column.NextMutation = 0.25 + _random.NextDouble() * 0.7;
+                DrawStrip(column);
+            }
+
+            Place(column);
+        }
+
+        var mouse = CursorInElement();
+        var inside = mouse.X > -HoverRadius && mouse.X < ActualWidth + HoverRadius
+                     && mouse.Y > -HoverRadius && mouse.Y < ActualHeight + HoverRadius;
+
+        if (!inside && !_heatActive)
+        {
+            if (_overlayDrawn)
+            {
+                using (_overlay.RenderOpen()) { }
+                _overlayDrawn = false;
+            }
+            return;
+        }
+
+        UpdateHeat(mouse, dt);
+        DrawOverlay(mouse);
+        _overlayDrawn = true;
+    }
+
+    private void UpdateHeat(Point mouse, double dt)
+    {
+        var decay = (float)(dt * 0.9);
+        var active = false;
+        for (var c = 0; c < _heat.Length; c++)
+        {
+            var heat = _heat[c];
             var centerX = c * CellWidth + CellWidth / 2;
             var near = Math.Abs(centerX - mouse.X) < HoverRadius;
-            for (var r = 0; r < column.Heat.Length; r++)
+
+            for (var r = 0; r < heat.Length; r++)
             {
-                var heat = Math.Max(0f, column.Heat[r] - decay);
+                var value = heat[r];
+                if (value > 0) value = Math.Max(0f, value - decay);
 
                 if (near)
                 {
@@ -170,47 +267,61 @@ public sealed class CodeRain : FrameworkElement
                     var dy = r * CellHeight + CellHeight / 2 - mouse.Y;
                     var distance = Math.Sqrt(dx * dx + dy * dy);
                     if (distance < HoverRadius)
-                        heat = Math.Max(heat, (float)Math.Pow(1 - distance / HoverRadius, 0.7));
+                        value = Math.Max(value, (float)Math.Pow(1 - distance / HoverRadius, 0.7));
                 }
 
-                column.Heat[r] = heat;
+                heat[r] = value;
+                if (value > 0) active = true;
             }
         }
+
+        _heatActive = active;
     }
 
-    protected override void OnRender(DrawingContext dc)
+    private void DrawOverlay(Point mouse)
     {
-        base.OnRender(dc);
+        using var dc = _overlay.RenderOpen();
 
         for (var c = 0; c < _columns.Length; c++)
         {
             var column = _columns[c];
-            var headRow = (int)Math.Floor(column.Head);
-            var x = c * CellWidth;
+            var centerX = column.X + CellWidth / 2;
+            var near = Math.Abs(centerX - mouse.X) < HoverRadius;
 
-            for (var row = 0; row < column.Glyphs.Length; row++)
+            if (near)
             {
-                var k = headRow - row;
-                var trail = 0.0;
-                if (k >= 0 && k < column.Length)
+                for (var k = 0; k < column.Length; k++)
                 {
-                    var fade = 1.0 - (double)k / column.Length;
-                    trail = MinTrailAlpha + (MaxTrailAlpha - MinTrailAlpha) * fade;
-                    if (k == 0) trail = 0.98;
+                    var y = (column.Head - k) * CellHeight;
+                    var dx = centerX - mouse.X;
+                    var dy = y + CellHeight / 2 - mouse.Y;
+                    var distance = Math.Sqrt(dx * dx + dy * dy);
+                    if (distance >= HoverRadius) continue;
+
+                    var t = Math.Min(1.0, Math.Pow(1 - distance / HoverRadius, 0.7) * 1.7);
+                    var fade = k == 0 ? 0.98 : MinTrailAlpha + (MaxTrailAlpha - MinTrailAlpha) * (1.0 - (double)k / column.Length);
+                    var level = LevelFor(Math.Max(fade, t * 0.98));
+                    if (level <= 0) continue;
+
+                    var text = GetText(column.Trail[k], (int)Math.Round(t * (ColorSteps - 1)), level);
+                    dc.DrawText(text, new Point(column.X, y));
                 }
+            }
 
-                var heat = Math.Min(1f, column.Heat[row] * 1.7f);
-                var alpha = Math.Max(trail, heat * 0.98);
-                var level = (int)Math.Round(alpha * (AlphaLevels - 1));
+            var heat = _heat[c];
+            for (var r = 0; r < heat.Length; r++)
+            {
+                if (heat[r] <= 0.01f) continue;
+
+                var d = column.Head - r;
+                if (d >= -0.5 && d <= column.Length - 0.5) continue;
+
+                var t = Math.Min(1f, heat[r] * 1.7f);
+                var level = LevelFor(t * 0.98);
                 if (level <= 0) continue;
-                level = Math.Min(level, AlphaLevels - 1);
 
-                var colorStep = k == 0 && heat < 0.5f
-                    ? HeadColor
-                    : (int)Math.Round(heat * (ColorSteps - 1));
-
-                var text = GetText(column.Glyphs[row], colorStep, level);
-                dc.DrawText(text, new Point(x, row * CellHeight));
+                var text = GetText(_grid[c][r], (int)Math.Round(t * (ColorSteps - 1)), level);
+                dc.DrawText(text, new Point(column.X, r * CellHeight));
             }
         }
     }
