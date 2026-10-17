@@ -2,6 +2,14 @@
 
 Gerenciador de senhas pessoal para Windows, feito em C# (.NET 8 + WPF).
 
+## Baixar e usar
+
+Baixe o `PasswordWallet.exe` na página de [**Releases**](https://github.com/barrocashospital-dot/password-wallet/releases/latest) e execute. É um único arquivo, **não precisa instalar nada** (nem o .NET): ele já traz tudo dentro (Windows 10 ou superior, 64 bits).
+
+- O Windows pode mostrar **"O Windows protegeu seu computador"**, porque o programa não tem assinatura digital paga. Clique em **Mais informações** e depois em **Executar assim mesmo**. Se quiser conferir que o arquivo é o publicado, compare o **SHA-256** com o que está nas notas da versão (`Get-FileHash PasswordWallet.exe`).
+- Na primeira execução ele extrai algumas bibliotecas para a pasta temporária do Windows (leva um ou dois segundos a mais).
+- Seus cofres (`.vault`) e arquivos-chave ficam onde **você** escolher; o programa não grava nada além disso.
+
 ## Como funciona
 
 - O cofre é um arquivo `.vault` cifrado com **AES-256-GCM**.
@@ -31,16 +39,19 @@ Tema escuro, com uma chuva de letras (o alfabeto do Base32) no fundo que fica az
 - `tests/Vault.Tests` — testes do Core (86 testes)
 - `src/Vault.App`   — janela WPF (MVVM com CommunityToolkit.Mvvm)
 
-## Requisitos
+## Compilar a partir do código
 
-- Windows 10 ou superior
-- [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
-
-## Executar
+Requisitos: Windows 10 ou superior e o [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0).
 
 ```powershell
 dotnet test
 dotnet run --project src/Vault.App
+```
+
+Para gerar o executável independente (`artifacts\PasswordWallet.exe`):
+
+```powershell
+.\publish.ps1
 ```
 
 ## Antes de usar de verdade

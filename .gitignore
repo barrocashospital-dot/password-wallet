@@ -17,3 +17,6 @@ TestResults/
 # Copias e temporarios do cofre (gerados pela gravacao atomica)
 *.vault.bak
 *.vault.tmp
+
+# Saida da publicacao (.exe gerado por publish.ps1)
+artifacts/
