@@ -1,6 +1,6 @@
 # Password Wallet
 
-Gerenciador de senhas pessoal para Windows, feito em C# (.NET 8 + WPF) como projeto de aprendizado.
+Gerenciador de senhas pessoal para Windows, feito em C# (.NET 8 + WPF).
 
 ## Como funciona
 
@@ -30,8 +30,11 @@ Tema escuro, com uma chuva de letras (o alfabeto do Base32) no fundo que fica az
 - `src/Vault.Core`  — criptografia, slots, formato do arquivo, armazenamento (sem interface)
 - `tests/Vault.Tests` — testes do Core (86 testes)
 - `src/Vault.App`   — janela WPF (MVVM com CommunityToolkit.Mvvm)
-- `docs/codigo/`    — **cada arquivo explicado, linha a linha** (comece pelo [índice](docs/codigo/README.md))
-- `docs/superpowers/` — especificação e plano de aulas
+
+## Requisitos
+
+- Windows 10 ou superior
+- [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
 
 ## Executar
 
@@ -49,7 +52,7 @@ Faça o **ensaio de desastre** com um cofre de teste: recupere-o só com o arqui
 - `string` do .NET não pode ser apagada da memória com garantia; o app mitiga com bloqueio por inatividade.
 - O arquivo-chave só protege como segundo fator se ficar **fora do computador**. O app avisa quando o disco escolhido é fixo ou é o do sistema.
 - O `.bak` guarda o estado **anterior** e continua abrindo com as credenciais anteriores: depois de uma recuperação por roubo do pendrive, apague-o.
-- Projeto educacional: não foi auditado. Mantenha **backup** do `.vault`, do pendrive e da chave de recuperação.
+- O projeto não foi auditado por terceiros. Mantenha **backup** do `.vault`, do pendrive e da chave de recuperação.
 
 ## Ideias futuras
 
