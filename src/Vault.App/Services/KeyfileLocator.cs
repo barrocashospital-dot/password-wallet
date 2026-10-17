@@ -38,7 +38,8 @@ public sealed class KeyfileLocator : IKeyfileLocator
             .ToList();
     }
 
-    public string? FindKeyfile() => Keyfile.Find(AvailableDrives().Select(d => d.Root));
+    public string? FindKeyfile() =>
+        Keyfile.Find(AvailableDrives().Select(d => d.Root)) ?? Keyfile.Find([AppPaths.DefaultFolder]);
 
     private static string BuildLabel(string root, string volumeLabel, bool isRemovable, bool isSystem)
     {

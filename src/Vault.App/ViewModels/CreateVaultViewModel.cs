@@ -48,15 +48,14 @@ public partial class CreateVaultViewModel : ObservableObject
     {
         _shell = shell;
         _services = services;
+        VaultPath = AppPaths.NextFreeVaultPath();
         RefreshDrives();
     }
 
     partial void OnSelectedDriveChanged(DriveOption? value)
     {
         if (value is null) return;
-        var folder = value.IsSystem
-            ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "PasswordWallet")
-            : value.Root;
+        var folder = value.IsSystem ? AppPaths.DefaultFolder : value.Root;
         KeyfilePath = Path.Combine(folder, Keyfile.FileName);
     }
 
@@ -122,6 +121,8 @@ public partial class CreateVaultViewModel : ObservableObject
             {
                 var folder = Path.GetDirectoryName(keyfilePath);
                 if (!string.IsNullOrEmpty(folder)) Directory.CreateDirectory(folder);
+                var vaultFolder = Path.GetDirectoryName(vaultPath);
+                if (!string.IsNullOrEmpty(vaultFolder)) Directory.CreateDirectory(vaultFolder);
                 var keyfile = Keyfile.Create(keyfilePath);
                 try
                 {

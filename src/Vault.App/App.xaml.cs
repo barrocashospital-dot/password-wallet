@@ -12,6 +12,14 @@ public partial class App : Application
     {
         base.OnStartup(e);
 
+        DispatcherUnhandledException += (_, args) =>
+        {
+            MessageBox.Show(
+                $"Ocorreu um erro inesperado:\n\n{args.Exception.Message}",
+                "Password Wallet", MessageBoxButton.OK, MessageBoxImage.Warning);
+            args.Handled = true;
+        };
+
         var services = new AppServices(
             new FileDialogService(),
             new KeyfileLocator(),
