@@ -28,7 +28,7 @@
                     <Button Content="Atualizar" Command="{Binding RefreshDrivesCommand}"/>
                     <Button Content="Outro local…" Command="{Binding BrowseKeyfileCommand}"/>
                 </StackPanel>
-                <TextBlock Text="{Binding DriveWarning}" Foreground="DarkOrange" TextWrapping="Wrap" Margin="0,4,0,0"/>
+                <TextBlock Text="{Binding DriveWarning}" Foreground="{StaticResource OrangeBrush}" TextWrapping="Wrap" Margin="0,4,0,0"/>
                 <TextBlock Text="{Binding KeyfilePath}" Style="{StaticResource Hint}"/>
 
                 <TextBlock Text="Arquivo do cofre" Style="{StaticResource Field}"/>
