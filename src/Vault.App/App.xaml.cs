@@ -6,6 +6,8 @@ namespace Vault.App;
 
 public partial class App : Application
 {
+    private static readonly TimeSpan IdleTimeout = TimeSpan.FromMinutes(3);
+
     protected override void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
@@ -14,11 +16,13 @@ public partial class App : Application
             new FileDialogService(),
             new KeyfileLocator(),
             new ClipboardService());
+        var idle = new IdleLockService(IdleTimeout);
 
-        var window = new MainWindow
+        var window = new MainWindow(idle)
         {
-            DataContext = new MainViewModel(services)
+            DataContext = new MainViewModel(services, idle)
         };
         window.Show();
+        idle.Reset();
     }
 }

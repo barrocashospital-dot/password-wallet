@@ -11,9 +11,10 @@ public partial class MainViewModel : ObservableObject, IShell
     [ObservableProperty]
     private ObservableObject? _currentViewModel;
 
-    public MainViewModel(AppServices services)
+    public MainViewModel(AppServices services, IdleLockService idle)
     {
         _services = services;
+        idle.Idle += OnIdle;
         ShowStart();
     }
 
@@ -33,6 +34,19 @@ public partial class MainViewModel : ObservableObject, IShell
         Navigate(new VaultViewModel(this, _services, session, vaultPath));
 
     public void OnClosing() => (CurrentViewModel as VaultViewModel)?.SaveIfDirty();
+
+    private void OnIdle()
+    {
+        switch (CurrentViewModel)
+        {
+            case VaultViewModel vault:
+                vault.LockCommand.Execute(null);
+                break;
+            case RecoverViewModel { IsStepTwo: true }:
+                ShowStart();
+                break;
+        }
+    }
 
     private void Navigate(ObservableObject next)
     {
