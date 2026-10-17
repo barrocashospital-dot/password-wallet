@@ -13,3 +13,7 @@ obj/
 TestResults/
 *.log
 .idea/
+
+# Copias e temporarios do cofre (gerados pela gravacao atomica)
+*.vault.bak
+*.vault.tmp
