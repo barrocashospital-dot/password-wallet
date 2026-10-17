@@ -53,8 +53,11 @@ public partial class CreateVaultViewModel : ObservableObject
 
     partial void OnSelectedDriveChanged(DriveOption? value)
     {
-        if (value is not null)
-            KeyfilePath = Path.Combine(value.Root, Keyfile.FileName);
+        if (value is null) return;
+        var folder = value.IsSystem
+            ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "PasswordWallet")
+            : value.Root;
+        KeyfilePath = Path.Combine(folder, Keyfile.FileName);
     }
 
     [RelayCommand]
@@ -117,6 +120,8 @@ public partial class CreateVaultViewModel : ObservableObject
 
             var (session, recovery) = await Task.Run(() =>
             {
+                var folder = Path.GetDirectoryName(keyfilePath);
+                if (!string.IsNullOrEmpty(folder)) Directory.CreateDirectory(folder);
                 var keyfile = Keyfile.Create(keyfilePath);
                 try
                 {
@@ -141,7 +146,11 @@ public partial class CreateVaultViewModel : ObservableObject
         }
         catch (UnauthorizedAccessException ex)
         {
-            Error = $"Sem permissão para gravar: {ex.Message}";
+            Error = $"Sem permissão para gravar: {ex.Message} Escolha outra pasta em \"Outro local\".";
+        }
+        catch (Exception ex) when (ex is ArgumentException or NotSupportedException)
+        {
+            Error = $"Caminho inválido: {ex.Message}";
         }
         finally
         {
