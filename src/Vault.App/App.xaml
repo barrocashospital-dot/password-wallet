@@ -27,32 +27,7 @@
             <GradientStop Color="#070B18" Offset="1"/>
         </RadialGradientBrush>
 
-        <DrawingImage x:Key="AppLogo">
-            <DrawingImage.Drawing>
-                <DrawingGroup>
-                    <GeometryDrawing Brush="{StaticResource AccentBrush}">
-                        <GeometryDrawing.Geometry>
-                            <RectangleGeometry Rect="0,0,32,32" RadiusX="8" RadiusY="8"/>
-                        </GeometryDrawing.Geometry>
-                    </GeometryDrawing>
-                    <GeometryDrawing Geometry="M12,15 L12,12.5 A4,4 0 0 1 20,12.5 L20,15">
-                        <GeometryDrawing.Pen>
-                            <Pen Brush="White" Thickness="2.4" StartLineCap="Round" EndLineCap="Round"/>
-                        </GeometryDrawing.Pen>
-                    </GeometryDrawing>
-                    <GeometryDrawing Brush="White">
-                        <GeometryDrawing.Geometry>
-                            <RectangleGeometry Rect="9,15,14,10" RadiusX="2.5" RadiusY="2.5"/>
-                        </GeometryDrawing.Geometry>
-                    </GeometryDrawing>
-                    <GeometryDrawing Brush="{StaticResource AccentBrush}">
-                        <GeometryDrawing.Geometry>
-                            <EllipseGeometry Center="16,19.6" RadiusX="1.6" RadiusY="1.6"/>
-                        </GeometryDrawing.Geometry>
-                    </GeometryDrawing>
-                </DrawingGroup>
-            </DrawingImage.Drawing>
-        </DrawingImage>
+        <BitmapImage x:Key="AppLogo" UriSource="pack://application:,,,/Vault.App;component/Assets/icon.png"/>
 
         <Style TargetType="Button">
             <Setter Property="Padding" Value="14,7"/>
@@ -174,6 +149,8 @@
                             <ContentPresenter IsHitTestVisible="False"
                                               Content="{TemplateBinding SelectionBoxItem}"
                                               ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
+                                              ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}"
+                                              ContentStringFormat="{TemplateBinding SelectionBoxItemStringFormat}"
                                               Margin="{TemplateBinding Padding}"
                                               VerticalAlignment="Center" HorizontalAlignment="Left"/>
                             <Popup x:Name="PART_Popup" Placement="Bottom" AllowsTransparency="True" Focusable="False"

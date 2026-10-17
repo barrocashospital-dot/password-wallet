@@ -18,10 +18,10 @@
                 <PasswordBox local:PasswordBoxHelper.BoundPassword="{Binding Passphrase, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                 <TextBlock Text="{Binding PassphraseHint}" Style="{StaticResource Hint}"/>
 
-                <TextBlock Text="Confirme a frase" Style="{StaticResource Field}"/>
+                <TextBlock Text="Confirmar frase" Style="{StaticResource Field}"/>
                 <PasswordBox local:PasswordBoxHelper.BoundPassword="{Binding Confirmation, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
 
-                <TextBlock Text="Pendrive (onde ficará o arquivo-chave)" Style="{StaticResource Field}"/>
+                <TextBlock Text="Arquivo-chave" Style="{StaticResource Field}"/>
                 <StackPanel Orientation="Horizontal">
                     <ComboBox ItemsSource="{Binding Drives}" SelectedItem="{Binding SelectedDrive}" DisplayMemberPath="Label"
                               MinWidth="320" Margin="0,2,8,2"/>

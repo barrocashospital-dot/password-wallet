@@ -11,7 +11,7 @@ public sealed class CodeRain : FrameworkElement
     private const double CellWidth = 20;
     private const double CellHeight = 22;
     private const double GlyphSize = 16;
-    private const double HoverRadius = 150;
+    private const double HoverRadius = 80;
     private const int ColorSteps = 8;
     private const int HeadColor = ColorSteps;
     private const int AlphaLevels = 12;

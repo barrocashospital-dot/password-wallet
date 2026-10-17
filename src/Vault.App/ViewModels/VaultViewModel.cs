@@ -97,7 +97,7 @@ public partial class VaultViewModel : ObservableObject, IDisposable
     {
         if (Selected is null) return;
         _services.Clipboard.CopySensitive(Selected.Username);
-        Status = "Usuário copiado (a área de transferência é apagada em 15 s).";
+        Status = "Usuário copiado · apagado em 15 s";
     }
 
     [RelayCommand]
@@ -105,7 +105,7 @@ public partial class VaultViewModel : ObservableObject, IDisposable
     {
         if (Selected is null) return;
         _services.Clipboard.CopySensitive(Selected.Password);
-        Status = "Senha copiada (a área de transferência é apagada em 15 s).";
+        Status = "Senha copiada · apagada em 15 s";
     }
 
     [RelayCommand]

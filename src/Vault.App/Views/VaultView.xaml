@@ -9,7 +9,7 @@
         <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,10">
             <Button Content="Salvar" Command="{Binding SaveCommand}" Style="{StaticResource PrimaryButton}"/>
             <Button Content="Bloquear" Command="{Binding LockCommand}"/>
-            <TextBlock Text="● alterações não salvas" Foreground="{StaticResource OrangeBrush}" VerticalAlignment="Center"
+            <TextBlock Text="● não salvo" Foreground="{StaticResource OrangeBrush}" VerticalAlignment="Center"
                        Visibility="{Binding IsDirty, Converter={StaticResource BoolToVis}}"/>
             <TextBlock Text="{Binding Status}" Foreground="{StaticResource MutedBrush}" VerticalAlignment="Center" Margin="12,0,0,0"/>
         </StackPanel>

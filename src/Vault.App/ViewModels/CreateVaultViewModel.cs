@@ -40,14 +40,14 @@ public partial class CreateVaultViewModel : ObservableObject
     private bool _isBusy;
 
     public string PassphraseHint =>
-        $"{Passphrase.Length} de {PassphrasePolicy.MinLength} caracteres (mínimo)";
+        $"{Passphrase.Length} / {PassphrasePolicy.MinLength}";
 
     public string DriveWarning => SelectedDrive switch
     {
         { IsSystem: true } =>
-            "Este é o disco do sistema, o mesmo do computador. Um arquivo-chave aqui não vale como segundo fator.",
+            "Disco do sistema: o arquivo-chave aqui não protege.",
         { IsRemovable: false } =>
-            "O Windows trata este disco como fixo (comum em SSDs externos). Funciona, mas o arquivo-chave só protege se o disco ficar longe do computador.",
+            "Disco fixo: só protege se ficar longe do computador.",
         _ => ""
     };
 

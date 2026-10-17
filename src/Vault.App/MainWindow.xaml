@@ -10,22 +10,9 @@
     <Grid>
         <views:CodeRain/>
 
-        <DockPanel>
-            <Border DockPanel.Dock="Top" Background="{StaticResource HeaderBrush}" Padding="22,12"
-                    BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="0,0,0,1">
-                <StackPanel Orientation="Horizontal">
-                    <Image Source="{StaticResource AppLogo}" Width="30" Height="30"/>
-                    <TextBlock Text="Password Wallet" Foreground="White" FontSize="18" FontWeight="SemiBold"
-                               VerticalAlignment="Center" Margin="12,0,0,0"/>
-                    <TextBlock Text="cofre local · pendrive + frase" Foreground="#8FA0C8" FontSize="12"
-                               VerticalAlignment="Center" Margin="14,3,0,0"/>
-                </StackPanel>
-            </Border>
-
-            <Border Margin="20" Padding="26" Background="{StaticResource CardBrush}" CornerRadius="14"
-                    BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1">
-                <ContentControl Content="{Binding CurrentViewModel}"/>
-            </Border>
-        </DockPanel>
+        <Border Margin="24" Padding="28" Background="{StaticResource CardBrush}" CornerRadius="16"
+                BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1">
+            <ContentControl Content="{Binding CurrentViewModel}"/>
+        </Border>
     </Grid>
 </Window>
