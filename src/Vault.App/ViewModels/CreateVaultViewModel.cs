@@ -54,9 +54,8 @@ public partial class CreateVaultViewModel : ObservableObject
 
     partial void OnSelectedDriveChanged(DriveOption? value)
     {
-        if (value is null) return;
-        var folder = value.IsSystem ? AppPaths.DefaultFolder : value.Root;
-        KeyfilePath = Path.Combine(folder, Keyfile.FileName);
+        if (value is not null)
+            KeyfilePath = AppPaths.KeyfilePathFor(value);
     }
 
     [RelayCommand]

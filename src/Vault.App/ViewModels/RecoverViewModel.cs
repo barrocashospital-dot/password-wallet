@@ -61,7 +61,7 @@ public partial class RecoverViewModel : ObservableObject, IDisposable
     partial void OnSelectedDriveChanged(DriveOption? value)
     {
         if (value is not null)
-            KeyfilePath = Path.Combine(value.Root, Keyfile.FileName);
+            KeyfilePath = AppPaths.KeyfilePathFor(value);
     }
 
     [RelayCommand]
@@ -163,32 +163,75 @@ public partial class RecoverViewModel : ObservableObject, IDisposable
             var keyfilePath = KeyfilePath;
             var vaultPath = VaultPath;
 
-            var newRecovery = await Task.Run(() =>
-            {
-                var keyfile = Keyfile.Create(keyfilePath);
-                try
-                {
-                    var recovery = session.Rekey(pass, keyfile);
-                    VaultStorage.SaveAtomic(vaultPath, session.Save());
-                    return recovery;
-                }
-                catch
-                {
-                    File.Delete(keyfilePath);
-                    throw;
-                }
-            });
+            var newRecovery = await Task.Run(() => Rekey(session, pass, keyfilePath, vaultPath));
 
             Session = null;
             _shell.ShowRecoveryKey(newRecovery, () => _shell.ShowVault(session, vaultPath));
         }
+        catch (KeyfileSwapException ex)
+        {
+            Error = $"O cofre foi salvo, mas não foi possível trocar o arquivo-chave antigo ({ex.Reason}). " +
+                    $"O novo arquivo-chave está em {ex.NewPath}: renomeie-o para {Keyfile.FileName}.";
+        }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
-            Error = $"Não foi possível gravar (o arquivo-chave novo já existe?): {ex.Message}";
+            Error = $"Não foi possível gravar: {ex.Message}";
+        }
+        catch (Exception ex) when (ex is ArgumentException or NotSupportedException)
+        {
+            Error = $"Caminho inválido: {ex.Message}";
         }
         finally
         {
             IsBusy = false;
+        }
+    }
+
+    private static string Rekey(VaultSession session, string pass, string keyfilePath, string vaultPath)
+    {
+        var folder = Path.GetDirectoryName(keyfilePath);
+        if (!string.IsNullOrEmpty(folder)) Directory.CreateDirectory(folder);
+
+        var replacing = File.Exists(keyfilePath);
+        var writtenPath = replacing ? keyfilePath + ".new" : keyfilePath;
+        if (replacing) File.Delete(writtenPath);
+
+        var keyfile = Keyfile.Create(writtenPath);
+        string recovery;
+        try
+        {
+            recovery = session.Rekey(pass, keyfile);
+            VaultStorage.SaveAtomic(vaultPath, session.Save());
+        }
+        catch
+        {
+            File.Delete(writtenPath);
+            throw;
+        }
+
+        if (replacing)
+        {
+            try
+            {
+                File.Replace(writtenPath, keyfilePath, keyfilePath + ".old");
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                throw new KeyfileSwapException(writtenPath, ex.Message);
+            }
+        }
+        return recovery;
+    }
+
+    private sealed class KeyfileSwapException : Exception
+    {
+        public string NewPath { get; }
+        public string Reason { get; }
+
+        public KeyfileSwapException(string newPath, string reason)
+        {
+            NewPath = newPath;
+            Reason = reason;
         }
     }
 
