@@ -1,5 +1,7 @@
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.IO;
+using System.Windows.Data;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Vault.App.Services;
@@ -19,6 +21,8 @@ public partial class VaultViewModel : ObservableObject, IDisposable
 
     public ObservableCollection<EntryViewModel> Entries { get; } = new();
 
+    public ICollectionView EntriesView { get; }
+
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasSelection))]
     private EntryViewModel? _selected;
@@ -32,6 +36,9 @@ public partial class VaultViewModel : ObservableObject, IDisposable
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HidePassword))]
     private bool _showPassword;
+
+    [ObservableProperty]
+    private string _searchText = "";
 
     public string SaveError { get; private set; } = "";
 
@@ -47,6 +54,27 @@ public partial class VaultViewModel : ObservableObject, IDisposable
 
         foreach (var entry in session.Entries)
             Entries.Add(Wrap(entry));
+
+        EntriesView = CollectionViewSource.GetDefaultView(Entries);
+        EntriesView.Filter = item => item is EntryViewModel entry && Matches(entry);
+    }
+
+    partial void OnSelectedChanged(EntryViewModel? value) => ShowPassword = false;
+
+    partial void OnSearchTextChanged(string value)
+    {
+        EntriesView.Refresh();
+        if (Selected is not null && !Matches(Selected))
+            Selected = null;
+    }
+
+    private bool Matches(EntryViewModel entry)
+    {
+        var term = SearchText.Trim();
+        return term.Length == 0
+               || entry.Title.Contains(term, StringComparison.OrdinalIgnoreCase)
+               || entry.Username.Contains(term, StringComparison.OrdinalIgnoreCase)
+               || entry.Url.Contains(term, StringComparison.OrdinalIgnoreCase);
     }
 
     private EntryViewModel Wrap(Entry entry)
@@ -59,6 +87,7 @@ public partial class VaultViewModel : ObservableObject, IDisposable
     [RelayCommand]
     private void Add()
     {
+        SearchText = "";
         var entry = new Entry { Title = "Nova entrada" };
         _session.Entries.Add(entry);
         var vm = Wrap(entry);

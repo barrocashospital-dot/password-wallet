@@ -17,6 +17,12 @@ public sealed class EntryViewModel : ObservableObject
         set { if (SetProperty(Model.Title, value, Model, (m, v) => m.Title = v)) Changed?.Invoke(); }
     }
 
+    public string Url
+    {
+        get => Model.Url;
+        set { if (SetProperty(Model.Url, value, Model, (m, v) => m.Url = v)) Changed?.Invoke(); }
+    }
+
     public string Username
     {
         get => Model.Username;
