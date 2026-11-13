@@ -71,6 +71,9 @@ public partial class VaultViewModel : ObservableObject, IDisposable
         var target = Selected;
         if (target is null) return;
 
+        if (!_services.Dialogs.Confirm($"Excluir a entrada \"{target.Title}\"? Isso não pode ser desfeito depois de salvar."))
+            return;
+
         _session.Entries.Remove(target.Model);
         Entries.Remove(target);
         Selected = null;

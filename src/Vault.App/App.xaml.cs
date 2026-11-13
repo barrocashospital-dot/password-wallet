@@ -23,7 +23,8 @@ public partial class App : Application
         var services = new AppServices(
             new FileDialogService(),
             new KeyfileLocator(),
-            new ClipboardService());
+            new ClipboardService(),
+            new DialogService());
         var idle = new IdleLockService(IdleTimeout);
 
         var window = new MainWindow(idle)
