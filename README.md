@@ -63,7 +63,7 @@ Faça o **ensaio de desastre** com um cofre de teste: recupere-o só com o arqui
 
 - `string` do .NET não pode ser apagada da memória com garantia; o app mitiga com bloqueio por inatividade.
 - O arquivo-chave só protege como segundo fator se ficar **fora do computador**. O app avisa quando o disco escolhido é fixo ou é o do sistema. Sem pendrive (para testar), o padrão é `Documentos\PasswordWallet`.
-- O `.bak` guarda o estado **anterior** e continua abrindo com as credenciais anteriores: depois de uma recuperação por roubo do pendrive, apague-o.
+- O `.bak` guarda o estado **anterior** e continua abrindo com as credenciais anteriores; o mesmo vale para o `vault.keyfile.old` que uma recuperação deixa no lugar do arquivo-chave trocado. Depois de uma recuperação por roubo do pendrive, apague os dois.
 - O projeto não foi auditado por terceiros. Mantenha **backup** do `.vault`, do pendrive e da chave de recuperação.
 
 ## Ideias futuras

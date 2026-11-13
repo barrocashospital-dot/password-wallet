@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
     <ProjectReference Include="..\Vault.Core\Vault.Core.csproj" />
@@ -19,7 +19,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
     <ApplicationIcon>Assets\app.ico</ApplicationIcon>
-    <Version>1.0.1</Version>
+    <Version>1.1.0</Version>
     <AssemblyTitle>Password Wallet</AssemblyTitle>
     <Product>Password Wallet</Product>
     <Description>Gerenciador de senhas pessoal protegido por pendrive e frase secreta</Description>
