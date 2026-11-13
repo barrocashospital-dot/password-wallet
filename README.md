@@ -17,7 +17,8 @@ Baixe o `PasswordWallet.exe` na página de [**Releases**](https://github.com/bar
   - **Pendrive + frase:** `Argon2id(frase)` misturado com o `vault.keyfile` do pendrive via HKDF.
   - **Recuperação:** uma chave de recuperação em Base32 (guarde-a no papel, em lugar seguro).
 - Depois de uma recuperação, o app troca a chave mestra e refaz todas as credenciais.
-- Bloqueio automático após 3 minutos sem uso; a área de transferência é apagada após 15 s.
+- Bloqueio automático após 3 minutos sem uso, ao bloquear o Windows (Win+L) e ao suspender o computador. Se o cofre não puder ser salvo nesse momento, uma cópia cifrada vai para `Documentos\PasswordWallet` e a tela de desbloqueio avisa.
+- A área de transferência é apagada após 15 s, ao bloquear e ao fechar o programa.
 - A gravação é atômica (arquivo temporário + troca de nome) e mantém um `.bak` do estado anterior.
 
 ## Telas
@@ -31,12 +32,12 @@ Tema escuro, com uma chuva de letras (o alfabeto do Base32) no fundo que fica az
 | Chave de recuperação | Mostrada uma vez; é preciso digitá-la de volta |
 | Desbloquear | Pendrive achado sozinho + frase |
 | Recuperar | Chave de recuperação, depois novas credenciais |
-| Cofre aberto | Lista, detalhes, copiar, gerar senha, salvar, bloquear |
+| Cofre aberto | Lista com busca (título, usuário ou site), detalhes, copiar, gerar senha, salvar (Ctrl+S), bloquear (Ctrl+L) |
 
 ## Estrutura
 
 - `src/Vault.Core`  — criptografia, slots, formato do arquivo, armazenamento (sem interface)
-- `tests/Vault.Tests` — testes do Core (86 testes)
+- `tests/Vault.Tests` — testes do Core (98 testes)
 - `src/Vault.App`   — janela WPF (MVVM com CommunityToolkit.Mvvm)
 
 ## Compilar a partir do código
