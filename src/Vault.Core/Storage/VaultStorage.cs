@@ -2,6 +2,8 @@ namespace Vault.Core.Storage;
 
 public static class VaultStorage
 {
+    private const long MaxFileSize = 64L * 1024 * 1024;
+
     public static void SaveAtomic(string path, byte[] bytes)
     {
         var temp = path + ".tmp";
@@ -16,5 +18,10 @@ public static class VaultStorage
             File.Move(temp, path);
     }
 
-    public static byte[] Load(string path) => File.ReadAllBytes(path);
+    public static byte[] Load(string path)
+    {
+        if (new FileInfo(path).Length > MaxFileSize)
+            throw new CorruptVaultException("O arquivo do cofre é grande demais.");
+        return File.ReadAllBytes(path);
+    }
 }

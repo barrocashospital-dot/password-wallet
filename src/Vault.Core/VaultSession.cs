@@ -128,8 +128,15 @@ public sealed class VaultSession : IDisposable
             var json = AesGcmCipher.Decrypt(dek, box, FormatInfo.Aad("data"));
             try
             {
-                return JsonSerializer.Deserialize<List<Entry>>(json)
-                       ?? throw new CorruptVaultException("Dados do cofre vazios.");
+                var entries = JsonSerializer.Deserialize<List<Entry>>(json)
+                              ?? throw new CorruptVaultException("Dados do cofre vazios.");
+                foreach (var entry in entries)
+                {
+                    if (entry is null)
+                        throw new CorruptVaultException("Os dados do cofre contêm uma entrada vazia.");
+                    Normalise(entry);
+                }
+                return entries;
             }
             finally
             {
@@ -144,6 +151,15 @@ public sealed class VaultSession : IDisposable
         {
             throw new CorruptVaultException("Os dados do cofre estão ilegíveis.", ex);
         }
+    }
+
+    private static void Normalise(Entry entry)
+    {
+        entry.Title ??= "";
+        entry.Url ??= "";
+        entry.Username ??= "";
+        entry.Password ??= "";
+        entry.Notes ??= "";
     }
 
     private void RequireUnlocked()

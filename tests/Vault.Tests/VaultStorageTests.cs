@@ -1,3 +1,4 @@
+using Vault.Core;
 using Vault.Core.Storage;
 
 namespace Vault.Tests;
@@ -35,6 +36,17 @@ public class VaultStorageTests
         using var dir = new TempDir();
 
         Assert.Throws<FileNotFoundException>(() => VaultStorage.Load(dir.File("nao-existe.vault")));
+    }
+
+    [Fact]
+    public void Load_FileLargerThanLimit_ThrowsCorrupt()
+    {
+        using var dir = new TempDir();
+        var path = dir.File("grande.vault");
+        using (var stream = new FileStream(path, FileMode.Create, FileAccess.Write))
+            stream.SetLength(64L * 1024 * 1024 + 1);
+
+        Assert.Throws<CorruptVaultException>(() => VaultStorage.Load(path));
     }
 
     [Fact]

@@ -42,6 +42,23 @@ public sealed class VaultFile
         if (file.Version != FormatInfo.CurrentVersion)
             throw new UnsupportedVersionException(file.Version);
 
+        Validate(file);
+
         return file;
+    }
+
+    private static void Validate(VaultFile file)
+    {
+        if (file.Slots is null || file.Data is null)
+            throw new CorruptVaultException("O arquivo do cofre está incompleto.");
+
+        if (file.Data.Nonce is null || file.Data.Ciphertext is null)
+            throw new CorruptVaultException("Os dados do cofre estão incompletos.");
+
+        foreach (var slot in file.Slots)
+        {
+            if (slot is null || slot.Nonce is null || slot.WrappedKey is null)
+                throw new CorruptVaultException("Um slot do cofre está incompleto.");
+        }
     }
 }

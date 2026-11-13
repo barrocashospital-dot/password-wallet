@@ -1,5 +1,7 @@
 using Vault.Core;
+using System.Text;
 using Vault.Core.Crypto;
+using Vault.Core.Keyslots;
 using Vault.Core.Model;
 using Vault.Core.Storage;
 
@@ -17,6 +19,17 @@ public class VaultSessionTests
         return (session.Save(), keyfile, recovery);
     }
 
+    private static byte[] MakeVaultWithPayload(string payloadJson, byte[] keyfile)
+    {
+        var (session, _) = VaultSession.Create(Pass, keyfile, TestHelpers.FastKdf);
+        var file = VaultFile.Parse(session.Save());
+        var slot = file.Slots.First(s => s.Type == KeySlots.PassphraseType);
+        var dek = KeySlots.OpenPassphraseSlot(slot, Pass, keyfile);
+        var box = AesGcmCipher.Encrypt(dek, Encoding.UTF8.GetBytes(payloadJson), FormatInfo.Aad("data"));
+        file.Data = new SealedData { Nonce = box.Nonce, Ciphertext = box.Ciphertext };
+        return file.ToBytes();
+    }
+
     private static Entry SampleEntry() => new()
     {
         Title = "Banco", Username = "camilo", Password = "p@ss-ç-🔐", Notes = "nota"
@@ -32,6 +45,54 @@ public class VaultSessionTests
         var entry = Assert.Single(opened.Entries);
         Assert.Equal("Banco", entry.Title);
         Assert.Equal("p@ss-ç-🔐", entry.Password);
+    }
+
+    [Fact]
+    public void Open_PayloadWithNullEntry_ThrowsCorrupt()
+    {
+        var keyfile = SecureRandom.Bytes(32);
+        var file = MakeVaultWithPayload("[null]", keyfile);
+
+        Assert.Throws<CorruptVaultException>(() => VaultSession.Open(file, Pass, keyfile));
+    }
+
+    [Fact]
+    public void Open_PayloadWithNullStrings_NormalisesToEmpty()
+    {
+        var keyfile = SecureRandom.Bytes(32);
+        var file = MakeVaultWithPayload("[{\"Title\":null,\"Username\":null,\"Password\":null,\"Notes\":null,\"Url\":null}]", keyfile);
+
+        using var opened = VaultSession.Open(file, Pass, keyfile);
+
+        var entry = Assert.Single(opened.Entries);
+        Assert.Equal("", entry.Title);
+        Assert.Equal("", entry.Username);
+        Assert.Equal("", entry.Password);
+        Assert.Equal("", entry.Notes);
+        Assert.Equal("", entry.Url);
+    }
+
+    [Fact]
+    public void Open_PayloadWithoutUrl_LoadsWithEmptyUrl()
+    {
+        var keyfile = SecureRandom.Bytes(32);
+        var file = MakeVaultWithPayload("[{\"Title\":\"Banco\",\"Username\":\"a\",\"Password\":\"b\",\"Notes\":\"c\"}]", keyfile);
+
+        using var opened = VaultSession.Open(file, Pass, keyfile);
+
+        var entry = Assert.Single(opened.Entries);
+        Assert.Equal("Banco", entry.Title);
+        Assert.Equal("", entry.Url);
+    }
+
+    [Fact]
+    public void SaveOpen_PreservesUrl()
+    {
+        var (file, keyfile, _) = MakeVault(new Entry { Title = "Banco", Url = "https://banco.example" });
+
+        using var opened = VaultSession.Open(file, Pass, keyfile);
+
+        Assert.Equal("https://banco.example", Assert.Single(opened.Entries).Url);
     }
 
     [Fact]

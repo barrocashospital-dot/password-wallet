@@ -51,6 +51,19 @@ public class VaultFileTests
         Assert.Throws<CorruptVaultException>(() => VaultFile.Parse(Encoding.UTF8.GetBytes(json)));
     }
 
+    [Theory]
+    [InlineData("{\"version\":1,\"slots\":null,\"data\":{}}")]
+    [InlineData("{\"version\":1,\"slots\":[],\"data\":null}")]
+    [InlineData("{\"version\":1,\"slots\":[null],\"data\":{}}")]
+    [InlineData("{\"version\":1,\"slots\":[{\"type\":\"x\",\"nonce\":null,\"wrappedKey\":\"AQ==\"}],\"data\":{}}")]
+    [InlineData("{\"version\":1,\"slots\":[{\"type\":\"x\",\"nonce\":\"AQ==\",\"wrappedKey\":null}],\"data\":{}}")]
+    [InlineData("{\"version\":1,\"slots\":[],\"data\":{\"nonce\":null,\"ciphertext\":\"AQ==\"}}")]
+    [InlineData("{\"version\":1,\"slots\":[],\"data\":{\"nonce\":\"AQ==\",\"ciphertext\":null}}")]
+    public void Parse_NullStructure_ThrowsCorrupt(string json)
+    {
+        Assert.Throws<CorruptVaultException>(() => VaultFile.Parse(Encoding.UTF8.GetBytes(json)));
+    }
+
     [Fact]
     public void Parse_OtherVersion_ThrowsUnsupported()
     {
