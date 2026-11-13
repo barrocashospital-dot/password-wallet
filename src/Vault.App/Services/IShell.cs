@@ -6,7 +6,7 @@ public interface IShell
 {
     void ShowStart();
     void ShowCreate();
-    void ShowUnlock(string vaultPath);
+    void ShowUnlock(string vaultPath, string? notice = null);
     void ShowRecover();
     void ShowRecoveryKey(string keyText, Action onConfirmed);
     void ShowVault(VaultSession session, string vaultPath);

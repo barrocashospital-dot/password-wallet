@@ -8,6 +8,9 @@
         <TextBlock Text="Desbloquear cofre" Style="{StaticResource Heading}"/>
         <TextBlock Text="{Binding VaultPath}" Style="{StaticResource Hint}"/>
 
+        <TextBlock Text="{Binding Notice}" Foreground="{StaticResource OrangeBrush}" TextWrapping="Wrap" Margin="0,14,0,0"
+                   Visibility="{Binding HasNotice, Converter={StaticResource BoolToVis}}"/>
+
         <TextBlock Text="{Binding KeyfileStatus}" Style="{StaticResource Hint}" Margin="0,18,0,0"/>
         <StackPanel Orientation="Horizontal">
             <Button Content="Procurar no pendrive" Command="{Binding RefreshKeyfileCommand}" MinWidth="150"/>

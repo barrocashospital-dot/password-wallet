@@ -14,6 +14,10 @@ public partial class UnlockViewModel : ObservableObject
 
     public string VaultPath { get; }
 
+    public string Notice { get; }
+
+    public bool HasNotice => Notice.Length > 0;
+
     [ObservableProperty]
     private string _passphrase = "";
 
@@ -33,11 +37,12 @@ public partial class UnlockViewModel : ObservableObject
             ? "Arquivo-chave não encontrado. Insira o pendrive ou escolha o arquivo."
             : $"Arquivo-chave: {KeyfilePath}";
 
-    public UnlockViewModel(IShell shell, AppServices services, string vaultPath)
+    public UnlockViewModel(IShell shell, AppServices services, string vaultPath, string? notice = null)
     {
         _shell = shell;
         _services = services;
         VaultPath = vaultPath;
+        Notice = notice ?? "";
         KeyfilePath = services.Keyfiles.FindKeyfile() ?? "";
     }
 

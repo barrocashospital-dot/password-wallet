@@ -15,7 +15,7 @@ public sealed class ClipboardService : IClipboardService
     public ClipboardService()
     {
         _timer = new DispatcherTimer { Interval = ClearAfter };
-        _timer.Tick += (_, _) => ClearIfUnchanged();
+        _timer.Tick += (_, _) => ClearNow();
     }
 
     public void CopySensitive(string text)
@@ -40,7 +40,7 @@ public sealed class ClipboardService : IClipboardService
         _timer.Start();
     }
 
-    private void ClearIfUnchanged()
+    public void ClearNow()
     {
         _timer.Stop();
         try

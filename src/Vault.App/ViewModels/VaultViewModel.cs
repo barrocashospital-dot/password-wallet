@@ -128,10 +128,45 @@ public partial class VaultViewModel : ObservableObject, IDisposable
         SaveIfDirty();
         if (IsDirty) return;
 
+        LockAndLeave(null);
+    }
+
+    public void ForceLock()
+    {
+        try
+        {
+            SaveIfDirty();
+        }
+        catch (Exception)
+        {
+        }
+
+        LockAndLeave(IsDirty ? SaveRescueCopy() : null);
+    }
+
+    private string SaveRescueCopy()
+    {
+        try
+        {
+            var name = Path.GetFileNameWithoutExtension(_vaultPath);
+            var path = Path.Combine(AppPaths.DefaultFolder, $"{name}.nao-salvo-{DateTime.Now:yyyyMMdd-HHmmss}.vault");
+            Directory.CreateDirectory(AppPaths.DefaultFolder);
+            VaultStorage.SaveAtomic(path, _session.Save());
+            return $"Não foi possível salvar no local original. Uma cópia com as últimas alterações foi gravada em: {path}";
+        }
+        catch (Exception)
+        {
+            return "O cofre foi bloqueado por inatividade e as últimas alterações não puderam ser salvas.";
+        }
+    }
+
+    private void LockAndLeave(string? notice)
+    {
         _session.Lock();
         Entries.Clear();
         Selected = null;
-        _shell.ShowUnlock(_vaultPath);
+        _services.Clipboard.ClearNow();
+        _shell.ShowUnlock(_vaultPath, notice);
     }
 
     public void SaveIfDirty()

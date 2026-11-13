@@ -22,8 +22,8 @@ public partial class MainViewModel : ObservableObject, IShell
 
     public void ShowCreate() => Navigate(new CreateVaultViewModel(this, _services));
 
-    public void ShowUnlock(string vaultPath) =>
-        Navigate(new UnlockViewModel(this, _services, vaultPath));
+    public void ShowUnlock(string vaultPath, string? notice = null) =>
+        Navigate(new UnlockViewModel(this, _services, vaultPath, notice));
 
     public void ShowRecover() => Navigate(new RecoverViewModel(this, _services));
 
@@ -49,7 +49,7 @@ public partial class MainViewModel : ObservableObject, IShell
         switch (CurrentViewModel)
         {
             case VaultViewModel vault:
-                vault.LockCommand.Execute(null);
+                vault.ForceLock();
                 break;
             case RecoverViewModel { IsStepTwo: true }:
                 ShowStart();
