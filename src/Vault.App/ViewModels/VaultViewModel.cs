@@ -33,6 +33,8 @@ public partial class VaultViewModel : ObservableObject, IDisposable
     [NotifyPropertyChangedFor(nameof(HidePassword))]
     private bool _showPassword;
 
+    public string SaveError { get; private set; } = "";
+
     public bool HasSelection => Selected is not null;
     public bool HidePassword => !ShowPassword;
 
@@ -87,10 +89,12 @@ public partial class VaultViewModel : ObservableObject, IDisposable
         {
             VaultStorage.SaveAtomic(_vaultPath, _session.Save());
             IsDirty = false;
+            SaveError = "";
             Status = "Salvo.";
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
+            SaveError = ex.Message;
             Status = $"Erro ao salvar (o pendrive/disco está disponível?): {ex.Message}";
         }
     }

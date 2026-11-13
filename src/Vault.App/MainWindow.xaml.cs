@@ -22,7 +22,11 @@ public partial class MainWindow : Window
         PreviewMouseDown += (_, _) => idle.Reset();
         PreviewKeyDown += (_, _) => idle.Reset();
 
-        Closing += (_, _) => (DataContext as MainViewModel)?.OnClosing();
+        Closing += (_, e) =>
+        {
+            if (DataContext is MainViewModel main && !main.OnClosing())
+                e.Cancel = true;
+        };
     }
 
     private void UseDarkTitleBar()

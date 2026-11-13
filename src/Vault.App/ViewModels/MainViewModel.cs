@@ -33,7 +33,16 @@ public partial class MainViewModel : ObservableObject, IShell
     public void ShowVault(VaultSession session, string vaultPath) =>
         Navigate(new VaultViewModel(this, _services, session, vaultPath));
 
-    public void OnClosing() => (CurrentViewModel as VaultViewModel)?.SaveIfDirty();
+    public bool OnClosing()
+    {
+        if (CurrentViewModel is not VaultViewModel vault) return true;
+
+        vault.SaveIfDirty();
+        if (!vault.IsDirty) return true;
+
+        return _services.Dialogs.Confirm(
+            $"Não foi possível salvar as alterações ({vault.SaveError}). Fechar mesmo assim e perder as alterações?");
+    }
 
     private void OnIdle()
     {
