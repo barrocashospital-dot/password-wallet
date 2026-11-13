@@ -31,6 +31,7 @@
                 </StackPanel>
                 <TextBlock Text="{Binding DriveWarning}" Foreground="{StaticResource OrangeBrush}" TextWrapping="Wrap" Margin="0,4,0,0"/>
                 <TextBlock Text="{Binding KeyfilePath}" Style="{StaticResource Hint}"/>
+                <TextBlock Text="{Binding KeyfileHint}" Style="{StaticResource Hint}" Foreground="{StaticResource OrangeBrush}"/>
 
                 <TextBlock Text="Arquivo do cofre" Style="{StaticResource Field}"/>
                 <StackPanel Orientation="Horizontal">

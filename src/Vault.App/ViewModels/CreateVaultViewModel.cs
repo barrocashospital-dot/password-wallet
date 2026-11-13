@@ -27,6 +27,7 @@ public partial class CreateVaultViewModel : ObservableObject
     private DriveOption? _selectedDrive;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(KeyfileHint))]
     private string _keyfilePath = "";
 
     [ObservableProperty]
@@ -43,6 +44,11 @@ public partial class CreateVaultViewModel : ObservableObject
         $"{Passphrase.Length} / {PassphrasePolicy.MinLength}";
 
     public string DriveWarning => SelectedDrive?.Warning ?? "";
+
+    public string KeyfileHint =>
+        File.Exists(KeyfilePath)
+            ? "Já existe um arquivo-chave aqui: ele será usado também para este cofre."
+            : "";
 
     public CreateVaultViewModel(IShell shell, AppServices services)
     {
@@ -122,7 +128,8 @@ public partial class CreateVaultViewModel : ObservableObject
                 if (!string.IsNullOrEmpty(folder)) Directory.CreateDirectory(folder);
                 var vaultFolder = Path.GetDirectoryName(vaultPath);
                 if (!string.IsNullOrEmpty(vaultFolder)) Directory.CreateDirectory(vaultFolder);
-                var keyfile = Keyfile.Create(keyfilePath);
+                var reusing = File.Exists(keyfilePath);
+                var keyfile = reusing ? Keyfile.Read(keyfilePath) : Keyfile.Create(keyfilePath);
                 try
                 {
                     var created = VaultSession.Create(pass, keyfile);
@@ -131,7 +138,7 @@ public partial class CreateVaultViewModel : ObservableObject
                 }
                 catch
                 {
-                    File.Delete(keyfilePath);
+                    if (!reusing) File.Delete(keyfilePath);
                     throw;
                 }
             });
@@ -140,9 +147,13 @@ public partial class CreateVaultViewModel : ObservableObject
             Confirmation = "";
             _shell.ShowRecoveryKey(recovery, () => _shell.ShowVault(session, vaultPath));
         }
+        catch (WrongCredentialsException)
+        {
+            Error = "O arquivo-chave existente é inválido. Escolha outro local.";
+        }
         catch (IOException ex)
         {
-            Error = $"Não foi possível gravar os arquivos (o arquivo-chave já existe?): {ex.Message}";
+            Error = $"Não foi possível gravar os arquivos: {ex.Message}";
         }
         catch (UnauthorizedAccessException ex)
         {
