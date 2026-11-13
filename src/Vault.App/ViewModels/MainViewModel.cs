@@ -11,10 +11,11 @@ public partial class MainViewModel : ObservableObject, IShell
     [ObservableProperty]
     private ObservableObject? _currentViewModel;
 
-    public MainViewModel(AppServices services, IdleLockService idle)
+    public MainViewModel(AppServices services, IdleLockService idle, SystemLockService systemLock)
     {
         _services = services;
-        idle.Idle += OnIdle;
+        idle.Idle += LockNow;
+        systemLock.Locked += LockNow;
         ShowStart();
     }
 
@@ -44,7 +45,7 @@ public partial class MainViewModel : ObservableObject, IShell
             $"Não foi possível salvar as alterações ({vault.SaveError}). Fechar mesmo assim e perder as alterações?");
     }
 
-    private void OnIdle()
+    private void LockNow()
     {
         switch (CurrentViewModel)
         {
