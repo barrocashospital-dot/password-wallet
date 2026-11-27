@@ -34,7 +34,8 @@ public static class KeyfileWriter
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
             return $"O cofre foi salvo, mas não foi possível trocar o arquivo-chave antigo ({ex.Message}). " +
-                   $"O novo arquivo-chave está em {writtenPath}: renomeie-o para {Keyfile.FileName} antes de abrir o cofre.";
+                   $"O novo arquivo-chave está em {writtenPath}. Ao desbloquear, use \"Escolher arquivo…\" e aponte para ele, " +
+                   $"ou apague o antigo e renomeie o novo para {Keyfile.FileName}.";
         }
     }
 }
