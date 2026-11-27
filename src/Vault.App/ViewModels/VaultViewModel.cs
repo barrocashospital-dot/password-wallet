@@ -166,22 +166,37 @@ public partial class VaultViewModel : ObservableObject, IDisposable
             CloseGenerator();
             return;
         }
-        NewSuggestions();
+        RegenerateStrong();
+        RegenerateVeryStrong();
         IsGeneratorOpen = true;
     }
 
     [RelayCommand]
-    private void NewSuggestions()
-    {
+    private void RegenerateStrong() =>
         StrongSuggestion = PasswordGenerator.Generate(PasswordGenerator.StrongLength);
+
+    [RelayCommand]
+    private void RegenerateVeryStrong() =>
         VeryStrongSuggestion = PasswordGenerator.Generate(PasswordGenerator.VeryStrongLength);
-    }
+
+    [RelayCommand]
+    private void CopyStrongSuggestion() => CopySuggestion(StrongSuggestion);
+
+    [RelayCommand]
+    private void CopyVeryStrongSuggestion() => CopySuggestion(VeryStrongSuggestion);
 
     [RelayCommand]
     private void UseStrongSuggestion() => ApplySuggestion(StrongSuggestion);
 
     [RelayCommand]
     private void UseVeryStrongSuggestion() => ApplySuggestion(VeryStrongSuggestion);
+
+    private void CopySuggestion(string suggestion)
+    {
+        if (suggestion.Length == 0) return;
+        _services.Clipboard.CopySensitive(suggestion);
+        Status = $"Senha de {suggestion.Length} caracteres copiada · apagada em 15 s";
+    }
 
     [RelayCommand]
     private void CloseGenerator()
