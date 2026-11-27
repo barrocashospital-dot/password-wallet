@@ -6,4 +6,5 @@ public interface IFileDialogService
     string? PickVaultToCreate();
     string? PickKeyfileToOpen();
     string? PickKeyfileToCreate();
+    string? PickCsvToOpen();
 }

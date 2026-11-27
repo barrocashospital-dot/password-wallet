@@ -10,14 +10,20 @@
         <KeyBinding Key="S" Modifiers="Control" Command="{Binding SaveCommand}"/>
         <KeyBinding Key="L" Modifiers="Control" Command="{Binding LockCommand}"/>
     </UserControl.InputBindings>
+    <Grid>
     <DockPanel>
-        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,10">
-            <Button Content="Salvar" Command="{Binding SaveCommand}" Style="{StaticResource PrimaryButton}"/>
-            <Button Content="Bloquear" Command="{Binding LockCommand}"/>
-            <TextBlock Text="● não salvo" Foreground="{StaticResource OrangeBrush}" VerticalAlignment="Center"
-                       Visibility="{Binding IsDirty, Converter={StaticResource BoolToVis}}"/>
-            <TextBlock Text="{Binding Status}" Foreground="{StaticResource MutedBrush}" VerticalAlignment="Center" Margin="12,0,0,0"/>
-        </StackPanel>
+        <DockPanel DockPanel.Dock="Top" Margin="0,0,0,10">
+            <StackPanel DockPanel.Dock="Left" Orientation="Horizontal">
+                <Button Content="Salvar" Command="{Binding SaveCommand}" Style="{StaticResource PrimaryButton}"/>
+                <Button Content="Bloquear" Command="{Binding LockCommand}"/>
+                <Button Content="Importar CSV" Command="{Binding ImportCommand}"/>
+                <Button Content="Segurança" Command="{Binding OpenSecurityCommand}"/>
+                <TextBlock Text="● não salvo" Foreground="{StaticResource OrangeBrush}" VerticalAlignment="Center" Margin="4,0,0,0"
+                           Visibility="{Binding IsDirty, Converter={StaticResource BoolToVis}}"/>
+            </StackPanel>
+            <TextBlock Text="{Binding Status}" Foreground="{StaticResource MutedBrush}" VerticalAlignment="Center"
+                       TextWrapping="Wrap" Margin="12,0,0,0"/>
+        </DockPanel>
 
         <Grid>
             <Grid.ColumnDefinitions>
@@ -32,8 +38,24 @@
                 </StackPanel>
                 <TextBox DockPanel.Dock="Top" Margin="0,0,0,8" ToolTip="Buscar por título, usuário ou site"
                          Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"/>
-                <ListBox ItemsSource="{Binding EntriesView}" SelectedItem="{Binding Selected, Mode=TwoWay}"
-                         DisplayMemberPath="Title"/>
+                <DockPanel DockPanel.Dock="Top" Margin="2,0,0,8"
+                           Visibility="{Binding HasHealthIssues, Converter={StaticResource BoolToVis}}">
+                    <CheckBox DockPanel.Dock="Right" Content="Só estas" IsChecked="{Binding OnlyIssues}" VerticalAlignment="Center"/>
+                    <TextBlock Text="{Binding HealthSummary}" Foreground="{StaticResource OrangeBrush}" FontSize="12"
+                               TextWrapping="Wrap" VerticalAlignment="Center"/>
+                </DockPanel>
+                <ListBox ItemsSource="{Binding EntriesView}" SelectedItem="{Binding Selected, Mode=TwoWay}">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <DockPanel>
+                                <TextBlock DockPanel.Dock="Right" Text="●" Foreground="{StaticResource OrangeBrush}" Margin="8,0,0,0"
+                                           ToolTip="{Binding IssueText}"
+                                           Visibility="{Binding HasIssue, Converter={StaticResource BoolToVis}}"/>
+                                <TextBlock Text="{Binding Title}" TextTrimming="CharacterEllipsis"/>
+                            </DockPanel>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
             </DockPanel>
 
             <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto"
@@ -62,6 +84,8 @@
                         <Button Content="Copiar senha" Command="{Binding CopyPasswordCommand}"/>
                         <Button Content="Gerar senha" Command="{Binding GeneratePasswordCommand}"/>
                     </StackPanel>
+                    <TextBlock Text="{Binding Selected.IssueText}" Foreground="{StaticResource OrangeBrush}" TextWrapping="Wrap"
+                               Margin="0,4,0,0" Visibility="{Binding Selected.HasIssue, Converter={StaticResource BoolToVis}}"/>
 
                     <Border Visibility="{Binding IsGeneratorOpen, Converter={StaticResource BoolToVis}}"
                             Background="{StaticResource FieldBrush}" BorderBrush="{StaticResource CardBorderBrush}"
@@ -108,4 +132,66 @@
             </ScrollViewer>
         </Grid>
     </DockPanel>
+
+    <Border Visibility="{Binding IsSecurityOpen, Converter={StaticResource BoolToVis}}"
+            Background="{StaticResource BackgroundBrush}" BorderBrush="{StaticResource CardBorderBrush}"
+            BorderThickness="1" CornerRadius="12" Padding="22,18">
+        <ScrollViewer VerticalScrollBarVisibility="Auto" DataContext="{Binding Security}">
+            <StackPanel MaxWidth="600">
+                <DockPanel>
+                    <Button DockPanel.Dock="Right" Content="&#xE711;" Command="{Binding CloseCommand}"
+                            Style="{StaticResource IconButton}" ToolTip="Fechar"/>
+                    <TextBlock Text="Segurança do cofre" Style="{StaticResource Heading}"/>
+                </DockPanel>
+                <TextBlock Text="{Binding KeyfileCountText}" Style="{StaticResource Hint}"/>
+                <TextBlock Text="{Binding Message}" Foreground="{StaticResource SuccessBrush}" TextWrapping="Wrap" Margin="0,8,0,0"/>
+                <TextBlock Text="{Binding Error}" Style="{StaticResource ErrorText}"/>
+                <local:BusyBar Visibility="{Binding IsBusy, Converter={StaticResource BoolToVis}}" Margin="0,8,0,0"/>
+
+                <TextBlock Text="Confirme que é você" FontWeight="SemiBold" FontSize="15" Margin="0,16,0,0"/>
+                <TextBlock Text="Frase atual" Style="{StaticResource Field}"/>
+                <PasswordBox local:PasswordBoxHelper.BoundPassword="{Binding CurrentPassphrase, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                <TextBlock Text="Arquivo-chave atual" Style="{StaticResource Field}"/>
+                <DockPanel>
+                    <Button DockPanel.Dock="Right" Content="Escolher…" Command="{Binding BrowseCurrentKeyfileCommand}"/>
+                    <TextBlock Text="{Binding CurrentKeyfilePath}" Style="{StaticResource Hint}" VerticalAlignment="Center"/>
+                </DockPanel>
+
+                <TextBlock Text="Trocar a frase" FontWeight="SemiBold" FontSize="15" Margin="0,22,0,0"/>
+                <TextBlock Text="Nova frase" Style="{StaticResource Field}"/>
+                <PasswordBox local:PasswordBoxHelper.BoundPassword="{Binding NewPassphrase, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                <TextBlock Text="Confirmar nova frase" Style="{StaticResource Field}"/>
+                <PasswordBox local:PasswordBoxHelper.BoundPassword="{Binding Confirmation, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                <CheckBox Content="Trocar também o arquivo-chave" IsChecked="{Binding ChangeKeyfile}" Margin="0,10,0,0"/>
+                <StackPanel Visibility="{Binding ChangeKeyfile, Converter={StaticResource BoolToVis}}">
+                    <StackPanel Orientation="Horizontal">
+                        <ComboBox ItemsSource="{Binding Drives}" SelectedItem="{Binding SelectedNewDrive}" DisplayMemberPath="Label"
+                                  MinWidth="300" Margin="0,2,8,2"/>
+                        <Button Content="Atualizar" Command="{Binding RefreshDrivesCommand}"/>
+                        <Button Content="Outro local…" Command="{Binding BrowseNewKeyfileCommand}"/>
+                    </StackPanel>
+                    <TextBlock Text="{Binding NewKeyfileWarning}" Foreground="{StaticResource OrangeBrush}" TextWrapping="Wrap"/>
+                    <TextBlock Text="{Binding NewKeyfilePath}" Style="{StaticResource Hint}"/>
+                </StackPanel>
+                <TextBlock Style="{StaticResource Hint}" Margin="0,8,0,0"
+                           Text="A chave de recuperação continua a mesma. Se o pendrive foi perdido ou roubado, use Recuperar cofre na tela inicial: ela troca também a chave mestra. O arquivo .bak continua abrindo com as credenciais antigas."/>
+                <Button Content="Trocar credenciais" Command="{Binding ChangeCredentialsCommand}" Style="{StaticResource PrimaryButton}"
+                        HorizontalAlignment="Left" Margin="0,10,0,0"/>
+
+                <TextBlock Text="Pendrive reserva" FontWeight="SemiBold" FontSize="15" Margin="0,22,0,0"/>
+                <TextBlock Style="{StaticResource Hint}" Text="Um segundo pendrive que também abre o cofre, com a mesma frase. Guarde-o em outro lugar."/>
+                <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+                    <ComboBox ItemsSource="{Binding Drives}" SelectedItem="{Binding SelectedBackupDrive}" DisplayMemberPath="Label"
+                              MinWidth="300" Margin="0,2,8,2"/>
+                    <Button Content="Atualizar" Command="{Binding RefreshDrivesCommand}"/>
+                    <Button Content="Outro local…" Command="{Binding BrowseBackupKeyfileCommand}"/>
+                </StackPanel>
+                <TextBlock Text="{Binding BackupWarning}" Foreground="{StaticResource OrangeBrush}" TextWrapping="Wrap"/>
+                <TextBlock Text="{Binding BackupKeyfilePath}" Style="{StaticResource Hint}"/>
+                <Button Content="Cadastrar pendrive reserva" Command="{Binding AddBackupCommand}" Style="{StaticResource PrimaryButton}"
+                        HorizontalAlignment="Left" Margin="0,10,0,0"/>
+            </StackPanel>
+        </ScrollViewer>
+    </Border>
+    </Grid>
 </UserControl>

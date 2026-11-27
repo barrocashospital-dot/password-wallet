@@ -7,6 +7,7 @@ using CommunityToolkit.Mvvm.Input;
 using Vault.App.Services;
 using Vault.Core;
 using Vault.Core.Crypto;
+using Vault.Core.Import;
 using Vault.Core.Model;
 using Vault.Core.Storage;
 
@@ -18,6 +19,7 @@ public partial class VaultViewModel : ObservableObject, IDisposable
     private readonly AppServices _services;
     private readonly VaultSession _session;
     private readonly string _vaultPath;
+    private const long MaxImportBytes = 10 * 1024 * 1024;
 
     public ObservableCollection<EntryViewModel> Entries { get; } = new();
 
@@ -49,6 +51,21 @@ public partial class VaultViewModel : ObservableObject, IDisposable
     [ObservableProperty]
     private string _veryStrongSuggestion = "";
 
+    [ObservableProperty]
+    private bool _onlyIssues;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasHealthIssues))]
+    private string _healthSummary = "";
+
+    public bool HasHealthIssues => HealthSummary.Length > 0;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsSecurityOpen))]
+    private SecurityViewModel? _security;
+
+    public bool IsSecurityOpen => Security is not null;
+
     public string SaveError { get; private set; } = "";
 
     public bool HasSelection => Selected is not null;
@@ -66,6 +83,24 @@ public partial class VaultViewModel : ObservableObject, IDisposable
 
         EntriesView = CollectionViewSource.GetDefaultView(Entries);
         EntriesView.Filter = item => item is EntryViewModel entry && Matches(entry);
+        RefreshHealth();
+    }
+
+    partial void OnOnlyIssuesChanged(bool value) => OnSearchTextChanged(SearchText);
+
+    private void RefreshHealth()
+    {
+        var report = PasswordHealth.Analyze(Entries.Select(e => e.Model));
+        foreach (var entry in Entries)
+            entry.Issue = report.TryGetValue(entry.Model.Id, out var issue) ? issue : PasswordIssue.None;
+
+        var count = Entries.Count(e => e.HasIssue);
+        HealthSummary = count switch
+        {
+            0 => "",
+            1 => "1 senha fraca ou repetida",
+            _ => $"{count} senhas fracas ou repetidas"
+        };
     }
 
     partial void OnSelectedChanged(EntryViewModel? value)
@@ -83,6 +118,7 @@ public partial class VaultViewModel : ObservableObject, IDisposable
 
     private bool Matches(EntryViewModel entry)
     {
+        if (OnlyIssues && !entry.HasIssue) return false;
         var term = SearchText.Trim();
         return term.Length == 0
                || entry.Title.Contains(term, StringComparison.OrdinalIgnoreCase)
@@ -93,7 +129,11 @@ public partial class VaultViewModel : ObservableObject, IDisposable
     private EntryViewModel Wrap(Entry entry)
     {
         var vm = new EntryViewModel(entry);
-        vm.Changed += () => IsDirty = true;
+        vm.Changed += () =>
+        {
+            IsDirty = true;
+            RefreshHealth();
+        };
         return vm;
     }
 
@@ -101,12 +141,84 @@ public partial class VaultViewModel : ObservableObject, IDisposable
     private void Add()
     {
         SearchText = "";
+        OnlyIssues = false;
         var entry = new Entry { Title = "Nova entrada" };
         _session.Entries.Add(entry);
         var vm = Wrap(entry);
         Entries.Add(vm);
         Selected = vm;
         IsDirty = true;
+        RefreshHealth();
+    }
+
+    [RelayCommand]
+    private void Import()
+    {
+        var path = _services.Files.PickCsvToOpen();
+        if (path is null) return;
+
+        CsvImportResult result;
+        try
+        {
+            if (new FileInfo(path).Length > MaxImportBytes)
+            {
+                Status = "O arquivo é grande demais para importar (máximo de 10 MB).";
+                return;
+            }
+            result = CsvImporter.Parse(File.ReadAllText(path));
+        }
+        catch (CsvImportException ex)
+        {
+            Status = ex.Message;
+            return;
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            Status = $"Não foi possível ler o arquivo: {ex.Message}";
+            return;
+        }
+
+        var fresh = result.Entries.Where(e => !Entries.Any(existing => SameLogin(existing.Model, e))).ToList();
+        var repeated = result.Entries.Count - fresh.Count;
+        if (fresh.Count == 0)
+        {
+            Status = "Nada novo para importar: todas as entradas já estão no cofre.";
+            return;
+        }
+
+        var ignored = repeated + result.Skipped;
+        var question = $"Importar {fresh.Count} entradas ({result.Format}) de \"{Path.GetFileName(path)}\"?" +
+                       (ignored > 0 ? $" {ignored} serão ignoradas (repetidas ou sem dados)." : "");
+        if (!_services.Dialogs.Confirm(question)) return;
+
+        SearchText = "";
+        OnlyIssues = false;
+        foreach (var entry in fresh)
+        {
+            _session.Entries.Add(entry);
+            Entries.Add(Wrap(entry));
+        }
+        IsDirty = true;
+        RefreshHealth();
+        Status = $"{fresh.Count} entradas importadas. Salve o cofre e apague o arquivo CSV: ele guarda as senhas sem proteção.";
+    }
+
+    private static bool SameLogin(Entry a, Entry b) =>
+        a.Username == b.Username && a.Password == b.Password &&
+        (a.Url == b.Url || a.Title == b.Title);
+
+    [RelayCommand]
+    private void OpenSecurity()
+    {
+        SaveIfDirty();
+        if (IsDirty) return;
+        Security = new SecurityViewModel(_services, _session, _vaultPath, CloseSecurity);
+    }
+
+    private void CloseSecurity()
+    {
+        Security?.Clear();
+        Security = null;
     }
 
     [RelayCommand]
@@ -122,6 +234,7 @@ public partial class VaultViewModel : ObservableObject, IDisposable
         Entries.Remove(target);
         Selected = null;
         IsDirty = true;
+        RefreshHealth();
     }
 
     [RelayCommand]
@@ -255,6 +368,7 @@ public partial class VaultViewModel : ObservableObject, IDisposable
     private void LockAndLeave(string? notice)
     {
         CloseGenerator();
+        CloseSecurity();
         _session.Lock();
         Entries.Clear();
         Selected = null;

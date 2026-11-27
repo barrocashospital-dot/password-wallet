@@ -11,6 +11,8 @@ public sealed class FileDialogService : IFileDialogService
 
     public string? PickKeyfileToOpen() => Open(KeyfileFilter);
 
+    public string? PickCsvToOpen() => Open("Senhas exportadas (*.csv)|*.csv|Todos os arquivos (*.*)|*.*");
+
     public string? PickVaultToCreate() =>
         Save(VaultFilter, "meu-cofre.vault", ".vault");
 

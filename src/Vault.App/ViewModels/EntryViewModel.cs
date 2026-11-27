@@ -1,4 +1,5 @@
 using CommunityToolkit.Mvvm.ComponentModel;
+using Vault.Core;
 using Vault.Core.Model;
 
 namespace Vault.App.ViewModels;
@@ -39,5 +40,35 @@ public sealed class EntryViewModel : ObservableObject
     {
         get => Model.Notes;
         set { if (SetProperty(Model.Notes, value, Model, (m, v) => m.Notes = v)) Changed?.Invoke(); }
+    }
+
+    private PasswordIssue _issue;
+
+    public PasswordIssue Issue
+    {
+        get => _issue;
+        set
+        {
+            if (SetProperty(ref _issue, value))
+            {
+                OnPropertyChanged(nameof(HasIssue));
+                OnPropertyChanged(nameof(IssueText));
+            }
+        }
+    }
+
+    public bool HasIssue => Issue != PasswordIssue.None;
+
+    public string IssueText
+    {
+        get
+        {
+            var parts = new List<string>();
+            if (Issue.HasFlag(PasswordIssue.Weak))
+                parts.Add("Senha fraca: use pelo menos 12 caracteres com letras, números e símbolos.");
+            if (Issue.HasFlag(PasswordIssue.Reused))
+                parts.Add("Esta senha também é usada em outra entrada.");
+            return string.Join(" ", parts);
+        }
     }
 }
