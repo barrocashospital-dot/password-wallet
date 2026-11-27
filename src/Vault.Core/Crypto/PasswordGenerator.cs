@@ -4,6 +4,9 @@ namespace Vault.Core.Crypto;
 
 public static class PasswordGenerator
 {
+    public const int StrongLength = 16;
+    public const int VeryStrongLength = 32;
+
     private const string Lower = "abcdefghijkmnopqrstuvwxyz";
     private const string Upper = "ABCDEFGHJKLMNPQRSTUVWXYZ";
     private const string Digits = "23456789";

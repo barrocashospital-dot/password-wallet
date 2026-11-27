@@ -32,12 +32,12 @@ Tema escuro, com uma chuva de letras (o alfabeto do Base32) no fundo que fica az
 | Chave de recuperação | Mostrada uma vez; é preciso digitá-la de volta |
 | Desbloquear | Pendrive achado sozinho + frase |
 | Recuperar | Chave de recuperação, depois novas credenciais |
-| Cofre aberto | Lista com busca (título, usuário ou site), detalhes, copiar, gerar senha, salvar (Ctrl+S), bloquear (Ctrl+L) |
+| Cofre aberto | Lista com busca (título, usuário ou site), detalhes, copiar, gerar senha (escolha entre 16 e 32 caracteres), salvar (Ctrl+S), bloquear (Ctrl+L) |
 
 ## Estrutura
 
 - `src/Vault.Core`  — criptografia, slots, formato do arquivo, armazenamento (sem interface)
-- `tests/Vault.Tests` — testes do Core (98 testes)
+- `tests/Vault.Tests` — testes do Core (100 testes)
 - `src/Vault.App`   — janela WPF (MVVM com CommunityToolkit.Mvvm)
 
 ## Compilar a partir do código

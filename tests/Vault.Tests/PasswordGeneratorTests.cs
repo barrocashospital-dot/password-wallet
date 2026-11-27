@@ -26,6 +26,24 @@ public class PasswordGeneratorTests
         }
     }
 
+    [Theory]
+    [InlineData(PasswordGenerator.StrongLength, 16)]
+    [InlineData(PasswordGenerator.VeryStrongLength, 32)]
+    public void Presets_HaveExpectedLengthAndEveryCharacterClass(int preset, int expected)
+    {
+        Assert.Equal(expected, preset);
+        for (var i = 0; i < 100; i++)
+        {
+            var p = PasswordGenerator.Generate(preset);
+
+            Assert.Equal(expected, p.Length);
+            Assert.Contains(p, char.IsLower);
+            Assert.Contains(p, char.IsUpper);
+            Assert.Contains(p, char.IsDigit);
+            Assert.Contains(p, c => "!@#$%&*?-_+=".Contains(c));
+        }
+    }
+
     [Fact]
     public void Generate_ProducesDifferentPasswords()
     {

@@ -40,6 +40,15 @@ public partial class VaultViewModel : ObservableObject, IDisposable
     [ObservableProperty]
     private string _searchText = "";
 
+    [ObservableProperty]
+    private bool _isGeneratorOpen;
+
+    [ObservableProperty]
+    private string _strongSuggestion = "";
+
+    [ObservableProperty]
+    private string _veryStrongSuggestion = "";
+
     public string SaveError { get; private set; } = "";
 
     public bool HasSelection => Selected is not null;
@@ -59,7 +68,11 @@ public partial class VaultViewModel : ObservableObject, IDisposable
         EntriesView.Filter = item => item is EntryViewModel entry && Matches(entry);
     }
 
-    partial void OnSelectedChanged(EntryViewModel? value) => ShowPassword = false;
+    partial void OnSelectedChanged(EntryViewModel? value)
+    {
+        ShowPassword = false;
+        CloseGenerator();
+    }
 
     partial void OnSearchTextChanged(string value)
     {
@@ -147,8 +160,43 @@ public partial class VaultViewModel : ObservableObject, IDisposable
     [RelayCommand]
     private void GeneratePassword()
     {
-        if (Selected is not null)
-            Selected.Password = PasswordGenerator.Generate();
+        if (Selected is null) return;
+        if (IsGeneratorOpen)
+        {
+            CloseGenerator();
+            return;
+        }
+        NewSuggestions();
+        IsGeneratorOpen = true;
+    }
+
+    [RelayCommand]
+    private void NewSuggestions()
+    {
+        StrongSuggestion = PasswordGenerator.Generate(PasswordGenerator.StrongLength);
+        VeryStrongSuggestion = PasswordGenerator.Generate(PasswordGenerator.VeryStrongLength);
+    }
+
+    [RelayCommand]
+    private void UseStrongSuggestion() => ApplySuggestion(StrongSuggestion);
+
+    [RelayCommand]
+    private void UseVeryStrongSuggestion() => ApplySuggestion(VeryStrongSuggestion);
+
+    [RelayCommand]
+    private void CloseGenerator()
+    {
+        IsGeneratorOpen = false;
+        StrongSuggestion = "";
+        VeryStrongSuggestion = "";
+    }
+
+    private void ApplySuggestion(string suggestion)
+    {
+        if (Selected is null || suggestion.Length == 0) return;
+        Selected.Password = suggestion;
+        Status = $"Senha de {suggestion.Length} caracteres aplicada · salve para guardar";
+        CloseGenerator();
     }
 
     [RelayCommand]
@@ -191,6 +239,7 @@ public partial class VaultViewModel : ObservableObject, IDisposable
 
     private void LockAndLeave(string? notice)
     {
+        CloseGenerator();
         _session.Lock();
         Entries.Clear();
         Selected = null;

@@ -60,8 +60,37 @@
                     <StackPanel Orientation="Horizontal">
                         <CheckBox Content="Mostrar" IsChecked="{Binding ShowPassword}" VerticalAlignment="Center" Margin="0,0,12,0"/>
                         <Button Content="Copiar senha" Command="{Binding CopyPasswordCommand}"/>
-                        <Button Content="Gerar" Command="{Binding GeneratePasswordCommand}"/>
+                        <Button Content="Gerar senha" Command="{Binding GeneratePasswordCommand}"/>
                     </StackPanel>
+
+                    <Border Visibility="{Binding IsGeneratorOpen, Converter={StaticResource BoolToVis}}"
+                            Background="{StaticResource FieldBrush}" BorderBrush="{StaticResource CardBorderBrush}"
+                            BorderThickness="1" CornerRadius="10" Padding="14" Margin="0,8,0,0">
+                        <StackPanel>
+                            <TextBlock Text="Escolha uma senha" FontWeight="SemiBold"/>
+
+                            <TextBlock Text="16 caracteres · muito difícil" Style="{StaticResource Hint}" Margin="0,10,0,2"/>
+                            <DockPanel>
+                                <Button DockPanel.Dock="Right" Content="Usar esta" Command="{Binding UseStrongSuggestionCommand}"
+                                        Style="{StaticResource PrimaryButton}"/>
+                                <TextBox Text="{Binding StrongSuggestion, Mode=OneWay}" IsReadOnly="True" FontFamily="Consolas"
+                                         VerticalContentAlignment="Center"/>
+                            </DockPanel>
+
+                            <TextBlock Text="32 caracteres · máxima segurança" Style="{StaticResource Hint}" Margin="0,10,0,2"/>
+                            <DockPanel>
+                                <Button DockPanel.Dock="Right" Content="Usar esta" Command="{Binding UseVeryStrongSuggestionCommand}"
+                                        Style="{StaticResource PrimaryButton}"/>
+                                <TextBox Text="{Binding VeryStrongSuggestion, Mode=OneWay}" IsReadOnly="True" FontFamily="Consolas"
+                                         VerticalContentAlignment="Center"/>
+                            </DockPanel>
+
+                            <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+                                <Button Content="Gerar outras" Command="{Binding NewSuggestionsCommand}"/>
+                                <Button Content="Cancelar" Command="{Binding CloseGeneratorCommand}"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
 
                     <TextBlock Text="Notas" Style="{StaticResource Field}"/>
                     <TextBox Text="{Binding Selected.Notes, UpdateSourceTrigger=PropertyChanged}"
