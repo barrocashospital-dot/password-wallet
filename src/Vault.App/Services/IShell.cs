@@ -8,6 +8,6 @@ public interface IShell
     void ShowCreate();
     void ShowUnlock(string vaultPath, string? notice = null);
     void ShowRecover();
-    void ShowRecoveryKey(string keyText, Action onConfirmed);
+    void ShowRecoveryKey(string keyText, Action onConfirmed, string? notice = null);
     void ShowVault(VaultSession session, string vaultPath);
 }

@@ -14,8 +14,8 @@ public partial class MainViewModel : ObservableObject, IShell
     public MainViewModel(AppServices services, IdleLockService idle, SystemLockService systemLock)
     {
         _services = services;
-        idle.Idle += LockNow;
-        systemLock.Locked += LockNow;
+        idle.Idle += () => LockNow("por inatividade");
+        systemLock.Locked += () => LockNow("junto com o Windows");
         ShowStart();
     }
 
@@ -28,8 +28,8 @@ public partial class MainViewModel : ObservableObject, IShell
 
     public void ShowRecover() => Navigate(new RecoverViewModel(this, _services));
 
-    public void ShowRecoveryKey(string keyText, Action onConfirmed) =>
-        Navigate(new ShowRecoveryKeyViewModel(keyText, onConfirmed, _services.Clipboard));
+    public void ShowRecoveryKey(string keyText, Action onConfirmed, string? notice = null) =>
+        Navigate(new ShowRecoveryKeyViewModel(keyText, onConfirmed, _services.Clipboard, notice));
 
     public void ShowVault(VaultSession session, string vaultPath) =>
         Navigate(new VaultViewModel(this, _services, session, vaultPath));
@@ -45,12 +45,12 @@ public partial class MainViewModel : ObservableObject, IShell
             $"Não foi possível salvar as alterações ({vault.SaveError}). Fechar mesmo assim e perder as alterações?");
     }
 
-    private void LockNow()
+    private void LockNow(string reason)
     {
         switch (CurrentViewModel)
         {
             case VaultViewModel vault:
-                vault.ForceLock();
+                vault.ForceLock(reason);
                 break;
             case RecoverViewModel { IsStepTwo: true }:
                 ShowStart();

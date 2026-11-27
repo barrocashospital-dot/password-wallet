@@ -19,8 +19,13 @@ public partial class ShowRecoveryKeyViewModel : ObservableObject
     [ObservableProperty]
     private string _copyLabel = "Copiar";
 
-    public ShowRecoveryKeyViewModel(string keyText, Action onConfirmed, IClipboardService clipboard)
+    public string Notice { get; }
+
+    public bool HasNotice => Notice.Length > 0;
+
+    public ShowRecoveryKeyViewModel(string keyText, Action onConfirmed, IClipboardService clipboard, string? notice = null)
     {
+        Notice = notice ?? "";
         _clipboard = clipboard;
         KeyText = keyText;
         _onConfirmed = onConfirmed;

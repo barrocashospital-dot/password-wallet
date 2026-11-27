@@ -223,7 +223,7 @@ public partial class VaultViewModel : ObservableObject, IDisposable
         LockAndLeave(null);
     }
 
-    public void ForceLock()
+    public void ForceLock(string reason)
     {
         try
         {
@@ -233,10 +233,10 @@ public partial class VaultViewModel : ObservableObject, IDisposable
         {
         }
 
-        LockAndLeave(IsDirty ? SaveRescueCopy() : null);
+        LockAndLeave(IsDirty ? SaveRescueCopy(reason) : null);
     }
 
-    private string SaveRescueCopy()
+    private string SaveRescueCopy(string reason)
     {
         try
         {
@@ -248,7 +248,7 @@ public partial class VaultViewModel : ObservableObject, IDisposable
         }
         catch (Exception)
         {
-            return "O cofre foi bloqueado por inatividade e as últimas alterações não puderam ser salvas.";
+            return $"O cofre foi bloqueado {reason} e as últimas alterações não puderam ser salvas.";
         }
     }
 

@@ -114,6 +114,11 @@ public partial class CreateVaultViewModel : ObservableObject
             Error = "Escolha onde gravar o arquivo do cofre.";
             return;
         }
+        if (File.Exists(VaultPath))
+        {
+            Error = "Já existe um cofre neste local. Escolha outro nome para não apagá-lo.";
+            return;
+        }
 
         IsBusy = true;
         try
