@@ -30,8 +30,6 @@
             <GradientStop Color="#070B18" Offset="1"/>
         </RadialGradientBrush>
 
-        <BitmapImage x:Key="AppLogo" UriSource="pack://application:,,,/Vault.App;component/Assets/icon.png"/>
-
         <Style TargetType="Button">
             <Setter Property="Padding" Value="14,7"/>
             <Setter Property="Margin" Value="0,4,8,4"/>

@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <Resource Include="Assets\*.png" />
+    <Resource Include="Assets\app.ico" />
   </ItemGroup>
 
   <PropertyGroup>
@@ -19,7 +20,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
     <ApplicationIcon>Assets\app.ico</ApplicationIcon>
-    <Version>1.4.0</Version>
+    <Version>1.4.1</Version>
     <AssemblyTitle>Password Wallet</AssemblyTitle>
     <Product>Password Wallet</Product>
     <Description>Gerenciador de senhas pessoal protegido por pendrive e frase secreta</Description>

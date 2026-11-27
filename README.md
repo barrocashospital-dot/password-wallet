@@ -42,6 +42,7 @@ Tema escuro, com uma chuva de letras (o alfabeto do Base32) no fundo que fica az
 - `src/Vault.Core`  — criptografia, slots, formato do arquivo, armazenamento (sem interface)
 - `tests/Vault.Tests` — testes do Core (195 testes)
 - `src/Vault.App`   — janela WPF (MVVM com CommunityToolkit.Mvvm)
+- `design/logo.svg` — a logo em vetor (o ícone: chuva de letras com a fechadura)
 
 ## Compilar a partir do código
 

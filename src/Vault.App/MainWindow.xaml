@@ -4,7 +4,7 @@
         xmlns:views="clr-namespace:Vault.App.Views"
         Title="Password Wallet" Height="660" Width="940" MinHeight="560" MinWidth="780"
         WindowStartupLocation="CenterScreen"
-        Icon="{StaticResource AppLogo}"
+        Icon="/Vault.App;component/Assets/app.ico"
         Background="{StaticResource BackgroundBrush}"
         TextElement.Foreground="{StaticResource InkBrush}"
         Opacity="0">
