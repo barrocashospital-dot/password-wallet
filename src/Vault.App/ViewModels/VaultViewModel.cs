@@ -188,7 +188,12 @@ public partial class VaultViewModel : ObservableObject, IDisposable
 
         var ignored = repeated + result.Skipped;
         var question = $"Importar {fresh.Count} entradas ({result.Format}) de \"{Path.GetFileName(path)}\"?" +
-                       (ignored > 0 ? $" {ignored} serão ignoradas (repetidas ou sem dados)." : "");
+                       ignored switch
+                       {
+                           0 => "",
+                           1 => " 1 será ignorada (repetida ou sem dados).",
+                           _ => $" {ignored} serão ignoradas (repetidas ou sem dados)."
+                       };
         if (!_services.Dialogs.Confirm(question)) return;
 
         SearchText = "";
