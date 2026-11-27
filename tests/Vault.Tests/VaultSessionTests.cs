@@ -186,7 +186,21 @@ public class VaultSessionTests
         var (file, _, recovery) = MakeVault(SampleEntry());
 
         using var a = VaultSession.OpenWithRecovery(file, recovery);
-        using var b = VaultSession.OpenWithRecovery(file, recovery.ToLowerInvariant().Replace("-", " "));
+        using var b = VaultSession.OpenWithRecovery(file, recovery.ToUpperInvariant().Replace(" ", "\n"));
+
+        Assert.Single(a.Entries);
+        Assert.Single(b.Entries);
+    }
+
+    [Fact]
+    public void OpenWithRecovery_LegacyBase32Key_StillOpens()
+    {
+        var (file, _, recovery) = MakeVault(SampleEntry());
+        Assert.True(RecoveryKey.TryParse(recovery, out var key));
+        var legacy = RecoveryKey.FormatLegacy(key);
+
+        using var a = VaultSession.OpenWithRecovery(file, legacy);
+        using var b = VaultSession.OpenWithRecovery(file, legacy.ToLowerInvariant().Replace("-", " "));
 
         Assert.Single(a.Entries);
         Assert.Single(b.Entries);
@@ -206,9 +220,10 @@ public class VaultSessionTests
     public void OpenWithRecovery_TypoInKey_Throws()
     {
         var (file, _, recovery) = MakeVault();
-        var typo = (recovery[0] == 'A' ? 'B' : 'A') + recovery[1..];
+        var words = recovery.Split(' ');
+        words[0] = words[0] == "abacate" ? "zumbido" : "abacate";
 
-        Assert.Throws<WrongCredentialsException>(() => VaultSession.OpenWithRecovery(file, typo));
+        Assert.Throws<WrongCredentialsException>(() => VaultSession.OpenWithRecovery(file, string.Join(' ', words)));
     }
 
     [Fact]
