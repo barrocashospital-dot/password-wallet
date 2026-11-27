@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Vault.App.Services;
 using Vault.Core;
+using Vault.Core.Crypto;
 using Vault.Core.Storage;
 
 namespace Vault.App.ViewModels;
@@ -19,7 +20,12 @@ public partial class RecoverViewModel : ObservableObject, IDisposable
     private string _vaultPath = "";
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(RecoveryKeyHint))]
     private string _recoveryKeyText = "";
+
+    public string RecoveryKeyHint => RecoveryKey.Problem(RecoveryKeyText);
+
+    partial void OnRecoveryKeyTextChanged(string value) => Error = "";
 
     [ObservableProperty]
     private string _newPassphrase = "";
@@ -109,7 +115,7 @@ public partial class RecoverViewModel : ObservableObject, IDisposable
         }
         catch (WrongCredentialsException)
         {
-            Error = "Chave de recuperação incorreta. Confira cada caractere.";
+            Error = "Chave de recuperação incorreta. Confira cada palavra e a ordem.";
         }
         catch (CorruptVaultException)
         {

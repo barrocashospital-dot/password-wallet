@@ -12,9 +12,24 @@ public partial class ShowRecoveryKeyViewModel : ObservableObject
 
     public string KeyText { get; }
 
+    public IReadOnlyList<string> NumberedWords { get; }
+
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(ContinueCommand))]
+    [NotifyPropertyChangedFor(nameof(TypedBackHint))]
     private string _typedBack = "";
+
+    public string TypedBackHint
+    {
+        get
+        {
+            var problem = RecoveryKey.Problem(TypedBack);
+            if (problem.Length > 0) return problem;
+            if (TypedBack.Trim().Length > 0 && !CanContinue())
+                return "Essas palavras são válidas, mas não são as desta chave. Confira.";
+            return "";
+        }
+    }
 
     [ObservableProperty]
     private string _copyLabel = "Copiar";
@@ -28,6 +43,9 @@ public partial class ShowRecoveryKeyViewModel : ObservableObject
         Notice = notice ?? "";
         _clipboard = clipboard;
         KeyText = keyText;
+        NumberedWords = keyText.Split(' ', StringSplitOptions.RemoveEmptyEntries)
+            .Select((w, i) => $"{i + 1}. {w}")
+            .ToList();
         _onConfirmed = onConfirmed;
     }
 

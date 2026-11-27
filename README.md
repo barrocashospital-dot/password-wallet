@@ -16,7 +16,7 @@ Baixe o `PasswordWallet.exe` na página de [**Releases**](https://github.com/bar
 - A chave mestra (DEK) é aleatória e fica guardada em **slots**:
   - **Pendrive + frase:** `Argon2id(frase)` misturado com o `vault.keyfile` do pendrive via HKDF.
   - **Pendrive reserva (opcional):** um segundo pendrive que abre o cofre com a mesma frase.
-  - **Recuperação:** uma chave de recuperação em Base32 (guarde-a no papel, em lugar seguro).
+  - **Recuperação:** uma chave de recuperação de 24 palavras, da lista BIP39 em português (escreva no papel e guarde em lugar seguro). Chaves antigas, de letras e números, continuam valendo.
 - Depois de uma recuperação, o app troca a chave mestra e refaz todas as credenciais.
 - Na tela **Segurança** dá para trocar a frase (e, se quiser, o arquivo-chave) sem passar pela recuperação: a chave de recuperação continua a mesma.
 - Bloqueio automático após 3 minutos sem uso, ao bloquear o Windows (Win+L) e ao suspender o computador. Se o cofre não puder ser salvo nesse momento, uma cópia cifrada vai para `Documentos\PasswordWallet` e a tela de desbloqueio avisa.
@@ -31,7 +31,7 @@ Tema escuro, com uma chuva de letras (o alfabeto do Base32) no fundo que fica az
 |---|---|
 | Início | Criar, abrir ou recuperar um cofre |
 | Criar cofre | Frase, arquivo-chave no pendrive e local do cofre |
-| Chave de recuperação | Mostrada uma vez; é preciso digitá-la de volta |
+| Chave de recuperação | 24 palavras numeradas, mostradas uma vez; é preciso digitá-las de volta (bastam as 4 primeiras letras de cada) |
 | Desbloquear | Pendrive achado sozinho + frase |
 | Recuperar | Chave de recuperação, depois novas credenciais |
 | Cofre aberto | Lista com busca (título, usuário ou site), aviso de senhas fracas ou repetidas, detalhes, copiar, gerar senha (escolha entre 16 e 32 caracteres), importar CSV, salvar (Ctrl+S), bloquear (Ctrl+L) |
@@ -40,7 +40,7 @@ Tema escuro, com uma chuva de letras (o alfabeto do Base32) no fundo que fica az
 ## Estrutura
 
 - `src/Vault.Core`  — criptografia, slots, formato do arquivo, armazenamento (sem interface)
-- `tests/Vault.Tests` — testes do Core (135 testes)
+- `tests/Vault.Tests` — testes do Core (195 testes)
 - `src/Vault.App`   — janela WPF (MVVM com CommunityToolkit.Mvvm)
 
 ## Compilar a partir do código
@@ -74,4 +74,8 @@ Para trazer senhas de outro lugar, exporte-as em CSV pelo Chrome, Edge, Firefox,
 
 ## Ideias futuras
 
-Chave de recuperação em 24 palavras, bloqueio ao minimizar, instalador.
+Bloqueio ao minimizar, instalador.
+
+## Créditos
+
+A lista de palavras da chave de recuperação vem do BIP-0039 (licença MIT). Veja [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md).

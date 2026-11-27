@@ -28,8 +28,12 @@
                     <TextBlock Text="{Binding VaultPath}" Style="{StaticResource Hint}"/>
 
                     <TextBlock Text="Chave de recuperação" Style="{StaticResource Field}"/>
+                    <TextBlock Text="As 24 palavras, na ordem (bastam as 4 primeiras letras de cada). Chaves antigas, com letras e números, também valem."
+                               Style="{StaticResource Hint}"/>
                     <TextBox Text="{Binding RecoveryKeyText, UpdateSourceTrigger=PropertyChanged}"
-                             FontFamily="Consolas" TextWrapping="Wrap"/>
+                             FontFamily="Consolas" TextWrapping="Wrap" AcceptsReturn="True" MinHeight="64"
+                             VerticalContentAlignment="Top"/>
+                    <TextBlock Text="{Binding RecoveryKeyHint}" Foreground="{StaticResource OrangeBrush}" TextWrapping="Wrap" Margin="0,4,0,0"/>
                 </StackPanel>
 
                 <StackPanel Visibility="{Binding IsStepTwo, Converter={StaticResource BoolToVis}}">
