@@ -17,6 +17,8 @@ public sealed class VaultSession : IDisposable
 
     public bool IsLocked => _dek is null;
 
+    public int KeyfileCount => _file.Slots.Count(s => s.Type == KeySlots.PassphraseType);
+
     private VaultSession(byte[] dek, VaultFile file, List<Entry> entries)
     {
         _dek = dek;
@@ -38,10 +40,10 @@ public sealed class VaultSession : IDisposable
     {
         var file = VaultFile.Parse(fileBytes);
 
-        var slot = file.Slots.FirstOrDefault(s => s.Type == KeySlots.PassphraseType)
-                   ?? throw new CorruptVaultException("O cofre não tem o slot da frase.");
+        if (!file.Slots.Any(s => s.Type == KeySlots.PassphraseType))
+            throw new CorruptVaultException("O cofre não tem o slot da frase.");
 
-        var dek = KeySlots.OpenPassphraseSlot(slot, passphrase, keyfile);
+        var dek = TryOpenPassphraseSlots(file, passphrase, keyfile) ?? throw new WrongCredentialsException();
         return new VaultSession(dek, file, DecryptEntries(dek, file));
     }
 
@@ -88,6 +90,48 @@ public sealed class VaultSession : IDisposable
         _dek = SecureRandom.Bytes(32);
 
         return BuildSlots(passphrase, newKeyfile, kdf ?? Argon2Params.Default);
+    }
+
+    public bool VerifyCredentials(string passphrase, byte[] keyfile)
+    {
+        RequireUnlocked();
+        var dek = TryOpenPassphraseSlots(_file, passphrase, keyfile);
+        if (dek is null) return false;
+        try
+        {
+            return CryptographicOperations.FixedTimeEquals(dek, _dek);
+        }
+        finally
+        {
+            CryptographicOperations.ZeroMemory(dek);
+        }
+    }
+
+    public void ChangeCredentials(string currentPassphrase, byte[] currentKeyfile, string newPassphrase, byte[] newKeyfile,
+        Action<byte[]> persist, Argon2Params? kdf = null)
+    {
+        RequireUnlocked();
+        PassphrasePolicy.Validate(newPassphrase);
+        RequireCredentials(currentPassphrase, currentKeyfile);
+
+        var slots = new List<KeySlot> { KeySlots.CreatePassphraseSlot(_dek!, newPassphrase, newKeyfile, kdf ?? Argon2Params.Default) };
+        slots.AddRange(_file.Slots.Where(s => s.Type != KeySlots.PassphraseType));
+        ReplaceSlotsAndPersist(slots, persist);
+    }
+
+    public void AddBackupKeyfile(string currentPassphrase, byte[] currentKeyfile, byte[] backupKeyfile,
+        Action<byte[]> persist, Argon2Params? kdf = null)
+    {
+        RequireUnlocked();
+        RequireCredentials(currentPassphrase, currentKeyfile);
+        if (KeyfileCount >= KeySlots.MaxPassphraseSlots)
+            throw new InvalidOperationException($"O limite é de {KeySlots.MaxPassphraseSlots} arquivos-chave por cofre.");
+
+        var slots = new List<KeySlot>(_file.Slots)
+        {
+            KeySlots.CreatePassphraseSlot(_dek!, currentPassphrase, backupKeyfile, kdf ?? Argon2Params.Default)
+        };
+        ReplaceSlotsAndPersist(slots, persist);
     }
 
     public void Lock()
@@ -160,6 +204,42 @@ public sealed class VaultSession : IDisposable
         entry.Username ??= "";
         entry.Password ??= "";
         entry.Notes ??= "";
+    }
+
+    private void RequireCredentials(string passphrase, byte[] keyfile)
+    {
+        if (!VerifyCredentials(passphrase, keyfile))
+            throw new WrongCredentialsException();
+    }
+
+    private void ReplaceSlotsAndPersist(List<KeySlot> slots, Action<byte[]> persist)
+    {
+        var previous = _file.Slots;
+        _file.Slots = slots;
+        try
+        {
+            persist(Save());
+        }
+        catch
+        {
+            _file.Slots = previous;
+            throw;
+        }
+    }
+
+    private static byte[]? TryOpenPassphraseSlots(VaultFile file, string passphrase, byte[] keyfile)
+    {
+        foreach (var slot in file.Slots.Where(s => s.Type == KeySlots.PassphraseType))
+        {
+            try
+            {
+                return KeySlots.OpenPassphraseSlot(slot, passphrase, keyfile);
+            }
+            catch (WrongCredentialsException)
+            {
+            }
+        }
+        return null;
     }
 
     private void RequireUnlocked()

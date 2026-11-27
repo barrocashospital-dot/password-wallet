@@ -7,6 +7,7 @@ public static class KeySlots
 {
     public const string PassphraseType = "usb+passphrase";
     public const string RecoveryType = "recovery";
+    public const int MaxPassphraseSlots = 8;
 
     private const string PassphraseInfo = "vault-kek-passphrase-v1";
     private const string RecoveryInfo = "vault-kek-recovery-v1";

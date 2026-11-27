@@ -60,5 +60,8 @@ public sealed class VaultFile
             if (slot is null || slot.Nonce is null || slot.WrappedKey is null)
                 throw new CorruptVaultException("Um slot do cofre está incompleto.");
         }
+
+        if (file.Slots.Count(s => s.Type == KeySlots.PassphraseType) > KeySlots.MaxPassphraseSlots)
+            throw new CorruptVaultException("O cofre tem arquivos-chave demais.");
     }
 }
